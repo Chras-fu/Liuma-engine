@@ -1,0 +1,12 @@
+**/__pycache__/
+
+.idea
+
+image
+
+log
+
+data
+
+browser/**.exe
+

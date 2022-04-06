@@ -123,6 +123,8 @@ class ApiRequestCollector:
 
     def collect_body(self, api_data):
         body = api_data["body"]
+        if body is None:
+            return 
         self.body_type = body["type"]
         if body["type"] == "json":
             if body["json"] != '':

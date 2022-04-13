@@ -8,27 +8,25 @@ class Operation(object):
 
     def find_element(self, ele):
         """查找单个元素"""
-        loc = (ele["by"].lower(), ele["expression"])
         try:
-            element = self.driver.find_element(*tuple(loc))
-            self.test.debugLog("成功定位元素 'By: %s Expression: %s'" % loc)
+            element = self.driver.find_element(*tuple(ele))
+            self.test.debugLog("成功定位元素 'By: %s Expression: %s'" % ele)
             return element
         except Exception as e:
-            self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % loc)
+            self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % ele)
             raise e
 
     def find_elements(self, ele):
         """查找批量元素"""
-        loc = (ele["by"].lower(), ele["expression"])
         try:
-            elements = self.driver.find_elements(*tuple(loc))
+            elements = self.driver.find_elements(*tuple(ele))
             if len(elements) > 0:
-                self.test.debugLog("成功定位元素 'By: %s Expression: %s'" % loc)
+                self.test.debugLog("成功定位元素 'By: %s Expression: %s'" % ele)
                 return elements
             else:
-                self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % loc)
-                raise NoSuchElementException("Failed to find elements 'By: %s Expression: %s'" % loc)
+                self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % ele)
+                raise NoSuchElementException("Failed to find elements 'By: %s Expression: %s'" % ele)
         except Exception as e:
-            self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % loc)
+            self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % ele)
             raise e
 

@@ -39,17 +39,17 @@ class ApiTestStep:
         try:
             self.test.debugLog('[{}][{}]接口执行开始'.format(self.collector.apiId, self.collector.apiName))
             request_log = '【请求信息】:<br>'
-            request_log += '{} {}<br>'.format(self.collector.method, self.collector.url+self.collector.path)
+            request_log += '{} {}<br>'.format(self.collector.method, url_join(self.collector.url, self.collector.path))
             for key, value in self.collector.others.items():
                 if value is not None:
-                    ckey = REQUEST_CNAME_MAP[key] if key in REQUEST_CNAME_MAP else key
+                    c_key = REQUEST_CNAME_MAP[key] if key in REQUEST_CNAME_MAP else key
                     if key == 'files':
                         if isinstance(value, dict):
-                            request_log += '{}: {}<br>'.format(ckey, [i[0] for i in value.values()])
+                            request_log += '{}: {}<br>'.format(c_key, [i[0] for i in value.values()])
                         if isinstance(value, list):
-                            request_log += '{}: {}<br>'.format(ckey, [i[1][0] for i in value])
+                            request_log += '{}: {}<br>'.format(c_key, [i[1][0] for i in value])
                     else:
-                        request_log += '{}: {}<br>'.format(ckey, log_msg(value))
+                        request_log += '{}: {}<br>'.format(c_key, log_msg(value))
             self.test.debugLog(request_log[:-4])
             if self.collector.body_type == "form-urlencoded":
                 self.collector.others['data'] = urlencode(self.collector.others['data'])

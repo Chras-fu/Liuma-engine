@@ -15,11 +15,11 @@ class Page(Operation):
         try:
             frame_reference = self.find_element(frame)
             self.driver.switch_to.frame(frame_reference)
-            self.test.debugLog("成功切换frame:%s" % frame["expression"])
+            self.test.debugLog("成功切换frame:%s" % frame[1])
         except NoSuchElementException as e:
             raise e
         except Exception as e:
-            self.test.errorLog("无法切换frame:%s" % frame["expression"])
+            self.test.errorLog("无法切换frame:%s" % frame[1])
             raise e
 
     def switch_content(self):
@@ -268,8 +268,7 @@ class Page(Operation):
     def wait_element_appear(self, element, second):
         """等待元素出现"""
         try:
-            WebDriverWait(self.driver, second, 0.2).until(expected_conditions.presence_of_element_located(
-                (element["by"], element["expression"])))
+            WebDriverWait(self.driver, second, 0.2).until(expected_conditions.presence_of_element_located(element))
             self.test.debugLog("成功执行wait %ds until element appear" % second)
         except Exception as e:
             self.test.errorLog("无法执行wait %ds until element appear" % second)
@@ -278,8 +277,7 @@ class Page(Operation):
     def wait_element_disappear(self, element, second):
         """等待元素消失"""
         try:
-            WebDriverWait(self.driver, second, 0.2).until_not(expected_conditions.presence_of_element_located(
-                (element["by"], element["expression"])))
+            WebDriverWait(self.driver, second, 0.2).until_not(expected_conditions.presence_of_element_located(element))
             self.test.debugLog("成功执行wait %ds until element disappear" % second)
         except Exception as e:
             self.test.errorLog("无法执行wait %ds until element disappear" % second)

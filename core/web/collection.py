@@ -35,8 +35,8 @@ class WebOperationCollection:
         if opt_element is None or len(opt_element) == 0:
             self.opt_element = None
         else:
-            for element in opt_element.values():
-                element.pop("target")
+            for name, element in opt_element.items():
+                opt_element[name] = (element["by"].lower(), element["expression"])
             self.opt_element = opt_element
 
     def collect_opt_data(self, ui_data):

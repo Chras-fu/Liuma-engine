@@ -110,8 +110,7 @@ class WebTestCase:
                                                              step.collector.opt_name,
                                                              step.result[1]))
                 self.test.saveScreenShot(step.collector.opt_trans, self.driver.get_screenshot_as_png())
-                if "continue" in step.collector.opt_content["data"] \
-                        and step.collector.opt_content["data"]["continue"] is True:
+                if "continue" in step.collector.opt_data and step.collector.opt_data["continue"] is True:
                     try:
                         raise AssertionError(step.result[1])
                     except AssertionError:
@@ -122,10 +121,10 @@ class WebTestCase:
 
     def _condition_solve(self, step, current):
         if step.collector.opt_type == "condition":
-            offset_true = step.collector.opt_content["data"]["true"]
+            offset_true = step.collector.opt_data["true"]
             if not isinstance(offset_true, int):
                 offset_true = 0
-            offset_false = step.collector.opt_content["data"]["false"]
+            offset_false = step.collector.opt_data["false"]
             if not isinstance(offset_false, int):
                 offset_false = 0
             if step.result[0]:

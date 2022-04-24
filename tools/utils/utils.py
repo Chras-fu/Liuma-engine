@@ -98,11 +98,14 @@ def handle_operation_data(data):
         data_value = item["value"]
         try:
             if data_type == "JSONObject":
-                data_value = dict(data_value)
+                data_value = eval(data_value)
             elif data_type == "JSONArray":
-                data_value = list(data_value)
+                data_value = eval(data_value)
             elif data_type == "Boolean":
-                data_value = bool(data_value)
+                if data_value.lower() == "true":
+                    data_value = True
+                else:
+                    data_value = False
             elif data_type == "Int":
                 data_value = int(data_value)
             elif data_type == "Float":
@@ -122,11 +125,14 @@ def handle_params_data(params):
         data_value = item["value"]
         try:
             if data_type == "JSONObject":
-                data_value = dict(data_value)
+                data_value = eval(data_value)
             elif data_type == "JSONArray":
-                data_value = list(data_value)
+                data_value = eval(data_value)
             elif data_type == "Boolean":
-                data_value = bool(data_value)
+                if data_value.lower() == "true":
+                    data_value = True
+                else:
+                    data_value = False
             elif data_type == "Int":
                 data_value = int(data_value)
             elif data_type == "Float":
@@ -145,11 +151,14 @@ def handle_form_data(form):
             if item["type"] == "File":
                 form_file[item["name"]] = "{{@loadfile(%s)}}" % item["value"]
             elif item["type"] == "JSONObject":
-                form_data[item["name"]] = dict(item["value"])
+                form_data[item["name"]] = eval(item["value"])
             elif item["type"] == "JSONArray":
-                form_data[item["name"]] = list(item["value"])
+                form_data[item["name"]] = eval(item["value"])
             elif item["type"] == "Boolean":
-                form_data[item["name"]] = bool(item["value"])
+                if item["value"].lower() == 'true':
+                    form_data[item["name"]] = True
+                else:
+                    form_data[item["name"]] = False
             elif item["type"] == "Int":
                 form_data[item["name"]] = int(item["value"])
             elif item["type"] == "Float":

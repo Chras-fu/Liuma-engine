@@ -6,7 +6,7 @@ import traceback
 from uuid import uuid1
 from core.api.testcase import ApiTestCase
 from core.web.testcase import WebTestCase
-from lm.lm_config import IMAGE_PATH
+from lm.lm_config import IMAGE_PATH, LMConfig
 
 
 class LMCase(unittest.TestCase):
@@ -126,10 +126,14 @@ class LMCase(unittest.TestCase):
             self._outcome.errors.clear()
             self._outcome.errors.append((self, (error_type, error_value, error_tb)))
             if isError is True:
-                tb_e = traceback.TracebackException(error_type, error_value, error_tb)
-                msg_lines = list(tb_e.format())
-                for msg in msg_lines:
-                    self.errorLog(str(msg))
+                if LMConfig().enable_stderr.lower() == "true":
+                    # 此处可以打印详细报错的代码
+                    tb_e = traceback.TracebackException(error_type, error_value, error_tb)
+                    msg_lines = list(tb_e.format())
+                    err_msg = "程序错误信息: "
+                    for msg in msg_lines:
+                        err_msg = err_msg + "<br>" + msg
+                    self.errorLog(str(err_msg))
             if isError is True:
                 self.errorLog(str(error_value))
                 self.trans_list[-1]["status"] = 2

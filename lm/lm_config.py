@@ -46,6 +46,7 @@ class LMConfig(object):
         reader = IniReader(path)
         self.url = reader.data("Platform", "url")
         self.enable_proxy = reader.data("Platform", "enable-proxy")
+        self.enable_stderr = reader.data("Platform", "enable-stderr")
         self.engine = reader.data("Engine", "engine-code")
         self.secret = reader.data("Engine", "engine-secret")
         self.header = reader.option("Header")

@@ -23,10 +23,11 @@ REQUEST_CNAME_MAP = {
 
 class ApiTestStep:
 
-    def __init__(self, test, session, collector, context):
+    def __init__(self, test, session, collector, context, params):
         self.session = session
         self.collector = collector
         self.context = context
+        self.params = params
         self.test = test
         self.status_code = None
         self.response_headers = None
@@ -90,6 +91,24 @@ class ApiTestStep:
             if int(self.collector.controller["sleepAfterRun"]) > 0:
                 sleep(int(self.collector.controller["sleepAfterRun"]))
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
+
+    def exec_script(self, code):
+
+        def sys_put(name, val):
+            self.context[name] = val
+
+        def sys_get(name):
+            if name in self.params:
+                return self.params[name]
+            return self.context[name]
+
+        names = locals()
+        names["res_code"] = self.status_code
+        names["res_header"] = self.response_headers
+        names["res_data"] = self.response_content
+        names["res_cookies"] = self.response_cookies
+        names["res_bytes"] = self.response_content_bytes
+        exec(code)
 
     def save_response(self, res):
         self.status_code = res.status_code

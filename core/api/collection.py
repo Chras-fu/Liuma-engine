@@ -87,6 +87,10 @@ class ApiRequestCollector:
             api_data["controller"]["requireVerify"] = None
         if "requireStream" not in api_data["controller"]:
             api_data["controller"]["requireStream"] = None
+        if "preScript" not in api_data["controller"]:
+            api_data["controller"]["preScript"] = None  # 默认没有前置脚本
+        if "postScript" not in api_data["controller"]:
+            api_data["controller"]["postScript"] = None  # 默认没有后置脚本
         self.controller = api_data["controller"]
 
     def collect_query(self, api_data):

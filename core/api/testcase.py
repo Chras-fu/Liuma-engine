@@ -32,9 +32,13 @@ class ApiTestCase:
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'])
             collector = ApiRequestCollector()
             collector.collect(api_data)
-            step = ApiTestStep(self.test, self.session, collector, self.context)
+            step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
+            if step.collector.controller["preScript"] is not None:
+                step.exec_script(step.collector.controller["preScript"])
             self._render(step)
             step.execute()
+            if step.collector.controller["postScript"] is not None:
+                step.exec_script(step.collector.controller["postScript"])
             if step.assert_result['result']:
                 self.test.debugLog('[{}][{}]接口断言成功: {}'.format(step.collector.apiId,
                                                                step.collector.apiName,

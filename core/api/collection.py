@@ -76,21 +76,23 @@ class ApiRequestCollector:
 
     def collect_controller(self, api_data):
         if "sleepBeforeRun" not in api_data["controller"]:
-            api_data["controller"]["sleepBeforeRun"] = 0
+            api_data["controller"]["sleepBeforeRun"] = 0  # 默认执行前不等待
         if "sleepAfterRun" not in api_data["controller"]:
-            api_data["controller"]["sleepAfterRun"] = 0
+            api_data["controller"]["sleepAfterRun"] = 0  # 默认执行完成不等待
         if "useSession" not in api_data["controller"]:
-            api_data["controller"]["useSession"] = False
+            api_data["controller"]["useSession"] = "false"  # 默认不使用session
         if "saveSession" not in api_data["controller"]:
-            api_data["controller"]["saveSession"] = False
+            api_data["controller"]["saveSession"] = "false"  # 默认不保存session
         if "requireVerify" not in api_data["controller"]:
-            api_data["controller"]["requireVerify"] = None
+            api_data["controller"]["requireVerify"] = None  # 默认不需要验证
         if "requireStream" not in api_data["controller"]:
-            api_data["controller"]["requireStream"] = None
+            api_data["controller"]["requireStream"] = None  # 默认不是文件下载接口
         if "preScript" not in api_data["controller"]:
             api_data["controller"]["preScript"] = None  # 默认没有前置脚本
         if "postScript" not in api_data["controller"]:
             api_data["controller"]["postScript"] = None  # 默认没有后置脚本
+        if "errorContinue" not in api_data["controller"]:
+            api_data["controller"]["errorContinue"] = "false"  # 默认错误后不再执行
         self.controller = api_data["controller"]
 
     def collect_query(self, api_data):

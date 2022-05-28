@@ -1,4 +1,5 @@
 import re
+import sys
 
 from core.api.collection import ApiRequestCollector
 from core.template import Template
@@ -26,28 +27,47 @@ class ApiTestCase:
         self.comp = re.compile(r"\{\{.*?\}\}")
 
     def execute(self):
+        """用例执行入口函数"""
         if self.case_message['apiList'] is None:
             raise RuntimeError("无法获取API相关数据, 请重试!!!")
         for api_data in self.case_message['apiList']:
+            # 定义事务
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'])
+            # 按json模板中的接口顺序收集ApiTestStep实例
             collector = ApiRequestCollector()
             collector.collect(api_data)
             step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
-            if step.collector.controller["preScript"] is not None:
-                step.exec_script(step.collector.controller["preScript"])
-            self._render(step)
-            step.execute()
-            if step.collector.controller["postScript"] is not None:
-                step.exec_script(step.collector.controller["postScript"])
-            if step.assert_result['result']:
-                self.test.debugLog('[{}][{}]接口断言成功: {}'.format(step.collector.apiId,
-                                                               step.collector.apiName,
-                                                               log_msg(step.assert_result['checkMessages'])))
-            else:
-                self.test.errorLog('[{}][{}]接口断言失败: {}'.format(step.collector.apiId,
-                                                               step.collector.apiName,
-                                                               log_msg(step.assert_result['checkMessages'])))
-                raise AssertionError(log_msg(step.assert_result['checkMessages']))
+            try:
+                # 执行前置脚本
+                if step.collector.controller["preScript"] is not None:
+                    step.exec_script(step.collector.controller["preScript"])
+                # 渲染
+                self._render(step)
+                # 执行step, 接口参数移除，接口请求，接口响应，断言操作，依赖参数提取
+                step.execute()
+                # 执行后置脚本
+                if step.collector.controller["postScript"] is not None:
+                    step.exec_script(step.collector.controller["postScript"])
+                # 检查step的断言结果
+                if step.assert_result['result']:
+                    self.test.debugLog('[{}][{}]接口断言成功: {}'.format(step.collector.apiId,
+                                                                   step.collector.apiName,
+                                                                   log_msg(step.assert_result['checkMessages'])))
+                else:
+                    self.test.errorLog('[{}][{}]接口断言失败: {}'.format(step.collector.apiId,
+                                                                   step.collector.apiName,
+                                                                   log_msg(step.assert_result['checkMessages'])))
+                    raise AssertionError(log_msg(step.assert_result['checkMessages']))
+            except Exception as e:
+                error_info = sys.exc_info()
+                if step.collector.controller["errorContinue"].lower() == "true":
+                    # 失败后继续执行
+                    if issubclass(error_info[0], AssertionError):
+                        self.test.recordFailStatus(error_info)
+                    else:
+                        self.test.recordErrorStatus(error_info)
+                else:
+                    raise e
 
     def _render(self, step):
         self.template.init(step.collector.path)

@@ -61,12 +61,12 @@ class ApiTestStep:
                 sleep(int(self.collector.controller["sleepBeforeRun"]))
                 self.test.debugLog("请求前等待%sS" % int(self.collector.controller["sleepBeforeRun"]))
             start_time = datetime.datetime.now()
-            if bool(self.collector.controller["useSession"]) and bool(self.collector.controller["saveSession"]):
+            if self.collector.controller["useSession"].lower() == 'true' and self.collector.controller["saveSession"].lower() == "true":
                 res = self.session.request(self.collector.method, url, **self.collector.others)
-            elif bool(self.collector.controller["useSession"]):
+            elif self.collector.controller["useSession"].lower() == "true":
                 session = deepcopy(self.session)
                 res = session.request(self.collector.method, url, **self.collector.others)
-            elif bool(self.collector.controller["saveSession"]):
+            elif self.collector.controller["saveSession"].lower() == "true":
                 session = Session()
                 res = session.request(self.collector.method, url, **self.collector.others)
             else:
@@ -78,14 +78,16 @@ class ApiTestStep:
             response_log += '响应码: {}<br>'.format(self.status_code)
             response_log += '响应头: {}<br>'.format(dict2str(self.response_headers))
             if 'content-disposition' not in [key.lower() for key in self.response_headers.keys()]:
-                response_text = '响应体: {}'.format(log_msg(self.response_content))
+                response_text = '<b>响应体: {}</b>'.format(log_msg(self.response_content))
             else:
-                response_text = '响应体: 文件内容暂不展示, 长度{}'.format(len(self.response_content_bytes))
+                response_text = '<b>响应体: 文件内容暂不展示, 长度{}</b>'.format(len(self.response_content_bytes))
+            # 响应体长度不能超过50000
             response_log += response_text
             self.test.debugLog(response_log)
+            # 断言
             self.check()
-            if self.assert_result['result']:
-                self.extract_depend_params()
+            # 关联参数
+            self.extract_depend_params()
         finally:
             self.test.debugLog('[{}][{}]接口执行结束'.format(self.collector.apiId, self.collector.apiName))
             if int(self.collector.controller["sleepAfterRun"]) > 0:
@@ -93,12 +95,12 @@ class ApiTestStep:
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
 
     def exec_script(self, code):
-
+        """执行前后置脚本"""
         def sys_put(name, val):
             self.context[name] = val
 
         def sys_get(name):
-            if name in self.params:
+            if name in self.params:   # 优先从公参中取值
                 return self.params[name]
             return self.context[name]
 
@@ -111,6 +113,7 @@ class ApiTestStep:
         exec(code)
 
     def save_response(self, res):
+        """保存响应结果"""
         self.status_code = res.status_code
         self.response_headers = dict(res.headers)
         self.response_content_bytes = res.content
@@ -124,6 +127,7 @@ class ApiTestStep:
             self.response_content = res.text
 
     def extract_depend_params(self):
+        """关联参数"""
         if self.collector.relations is not None:
             for items in self.collector.relations:
                 if items['expression'].strip() == '$':
@@ -151,6 +155,7 @@ class ApiTestStep:
                 self.context[key] = value
 
     def check(self):
+        """断言"""
         check_messages = list()
         if self.collector.assertions is not None:
             results = list()

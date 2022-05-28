@@ -15,13 +15,14 @@ class Template:
     def __init__(self, context, functions, params, variable_start_string='{{', variable_end_string='}}', function_prefix='@', param_prefix='$'):
         self.param_prefix = param_prefix
         self.data = None
-        self.context = context
-        self.params = params
+        self.context = context  # 关联参数
+        self.params = params    # 公共参数
         self.variable_start_string = variable_start_string
         self.variable_end_string = variable_end_string
         self.function_prefix = function_prefix
         self.param_prefix = param_prefix
         self.stack = list()
+        # 动态存储接口的请求信息 以便渲染
         self.request_path = None
         self.request_headers = None
         self.request_query = None

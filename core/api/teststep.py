@@ -94,6 +94,18 @@ class ApiTestStep:
                 sleep(int(self.collector.controller["sleepAfterRun"]))
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
 
+    def judge_condition(self):
+        conditions = json.loads(self.collector.controller["whetherExec"])
+        for condition in conditions:
+            try:
+                result, msg = LMAssert(condition['assertion'], condition['target'], condition['expect']).compare()
+                if not result:
+                    return False
+            except:
+                return False
+        else:
+            return True
+
     def exec_script(self, code):
         """执行前后置脚本"""
         def sys_put(name, val):

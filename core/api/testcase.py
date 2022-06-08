@@ -38,6 +38,11 @@ class ApiTestCase:
             collector.collect(api_data)
             step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
             try:
+                # 判断是否执行
+                if step.collector.controller["whetherExec"] is not None:
+                    if not step.judge_condition():
+                        self.test.deleteTrans(-1)   # 任意条件不满足 跳过执行 并删除该事务定义
+                        continue
                 # 执行前置脚本
                 if step.collector.controller["preScript"] is not None:
                     step.exec_script(step.collector.controller["preScript"])

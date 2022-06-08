@@ -72,6 +72,11 @@ class LMCase(unittest.TestCase):
         if len(self.trans_list) > 1 and self.trans_list[-2]["status"] == "":
             self.trans_list[-2]["status"] = 0
 
+    def deleteTrans(self, index):
+        """删除事务"""
+        if len(self.trans_list) > index:
+            del self.trans_list[index]
+
     def recordFailStatus(self, exc_info=None):
         """记录断言失败"""
         self._outcome.errors.append((self, exc_info))

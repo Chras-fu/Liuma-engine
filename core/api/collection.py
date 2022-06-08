@@ -93,6 +93,8 @@ class ApiRequestCollector:
             api_data["controller"]["postScript"] = None  # 默认没有后置脚本
         if "errorContinue" not in api_data["controller"]:
             api_data["controller"]["errorContinue"] = "false"  # 默认错误后不再执行
+        if "whetherExec" not in api_data["controller"]:
+            api_data["controller"]["whetherExec"] = None  # 默认不需要判断
         self.controller = api_data["controller"]
 
     def collect_query(self, api_data):

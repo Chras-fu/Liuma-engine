@@ -1,4 +1,4 @@
-class WebOperationCollection:
+class WebOperationCollector:
 
     def __init__(self):
         self.id = None
@@ -16,22 +16,22 @@ class WebOperationCollection:
         return ui_data.get(name)
 
     def collect_id(self, ui_data):
-        self.id = WebOperationCollection.__parse(ui_data, "operationId")
+        self.id = WebOperationCollector.__parse(ui_data, "operationId")
 
     def collect_opt_type(self, ui_data):
-        self.opt_type = WebOperationCollection.__parse(ui_data, "operationType")
+        self.opt_type = WebOperationCollector.__parse(ui_data, "operationType")
 
     def collect_opt_name(self, ui_data):
-        self.opt_name = WebOperationCollection.__parse(ui_data, "operationName")
+        self.opt_name = WebOperationCollector.__parse(ui_data, "operationName")
 
     def collect_opt_trans(self, ui_data):
-        self.opt_trans = WebOperationCollection.__parse(ui_data, "operationTrans")
+        self.opt_trans = WebOperationCollector.__parse(ui_data, "operationTrans")
 
     def collect_opt_code(self, ui_data):
-        self.opt_code = WebOperationCollection.__parse(ui_data, "operationCode")
+        self.opt_code = WebOperationCollector.__parse(ui_data, "operationCode")
 
     def collect_opt_element(self, ui_data):
-        opt_element = WebOperationCollection.__parse(ui_data, "operationElement")
+        opt_element = WebOperationCollector.__parse(ui_data, "operationElement")
         if opt_element is None or len(opt_element) == 0:
             self.opt_element = None
         else:
@@ -40,7 +40,7 @@ class WebOperationCollection:
             self.opt_element = opt_element
 
     def collect_opt_data(self, ui_data):
-        opt_data = WebOperationCollection.__parse(ui_data, "operationData")
+        opt_data = WebOperationCollector.__parse(ui_data, "operationData")
         if opt_data is None or len(opt_data) == 0:
             self.opt_data = None
         else:

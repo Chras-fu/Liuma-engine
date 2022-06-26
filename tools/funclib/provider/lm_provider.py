@@ -112,6 +112,9 @@ class LiuMaProvider(BaseProvider):
             return int(shift_date.timestamp() * 1000)
         return shift_date.strftime(s)
 
+    def lenof(self, array):
+        return len(array)
+
     def indexof(self, array, index):
         return array[index]
 

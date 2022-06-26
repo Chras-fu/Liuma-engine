@@ -6,6 +6,7 @@ import traceback
 from uuid import uuid1
 from core.api.testcase import ApiTestCase
 from core.web.testcase import WebTestCase
+# from core.app.testcase import AppTestCase
 from lm.lm_config import IMAGE_PATH, LMConfig
 
 
@@ -23,6 +24,8 @@ class LMCase(unittest.TestCase):
             ApiTestCase(test=self).execute()
         elif self.case_type == "WEB":
             WebTestCase(test=self).execute()
+        # else:
+        #     AppTestCase(test=self).execute()
 
     def doCleanups(self):
         unittest.TestCase.doCleanups(self)
@@ -76,6 +79,10 @@ class LMCase(unittest.TestCase):
         """删除事务"""
         if len(self.trans_list) > index:
             del self.trans_list[index]
+
+    def updateTransStatus(self, status):
+        if len(self.trans_list) > 0:
+            self.trans_list[-1]["status"] = status
 
     def recordFailStatus(self, exc_info=None):
         """记录断言失败"""

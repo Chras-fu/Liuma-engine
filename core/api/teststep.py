@@ -100,11 +100,26 @@ class ApiTestStep:
             try:
                 result, msg = LMAssert(condition['assertion'], condition['target'], condition['expect']).compare()
                 if not result:
-                    return False
-            except:
-                return False
+                    return msg
+            except Exception as e:
+                return str(e)
         else:
             return True
+
+    def loop_exec(self):
+        loop = json.loads(self.collector.controller["loopExec"])
+        print(loop)
+        _loop_index_name = loop["indexName"]
+        try:
+            _loop_times = int(loop["times"])
+        except:
+            _loop_times = 1
+        try:
+            _loop_num = int(loop["num"])
+        except:
+            _loop_num = 1
+        return _loop_index_name, _loop_times, _loop_num
+
 
     def exec_script(self, code):
         """执行前后置脚本"""

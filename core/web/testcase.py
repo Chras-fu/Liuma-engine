@@ -3,7 +3,7 @@ import sys
 from jsonpath_ng.parser import JsonPathParser
 from selenium import webdriver
 from core.template import Template
-from core.web.collection import WebOperationCollection
+from core.web.collector import WebOperationCollector
 from core.web.teststep import UiTestStep
 from tools.utils.utils import get_case_message, handle_operation_data, handle_params_data
 import re
@@ -59,7 +59,7 @@ class WebTestCase:
                 opt_content = self.case_message['optList'][step_n]
                 self.test.defineTrans(opt_content["operationId"], opt_content['operationTrans'],
                                       self._get_opt_content(opt_content['operationElement']))
-                collector = WebOperationCollection()
+                collector = WebOperationCollector()
                 collector.collect(opt_content)
                 step = UiTestStep(self.test, self.driver, collector)
                 self._render(step)

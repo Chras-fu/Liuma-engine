@@ -56,6 +56,7 @@ PARAMS_ENUM = {
     "hour_shift": [float, str],
     "minute_shift": [float, str],
     "second_shift": [float, str],
+    "lenof": [list],
     "indexof": [list, int],
     "keyof": [dict, str],
     "pinyin": [str],

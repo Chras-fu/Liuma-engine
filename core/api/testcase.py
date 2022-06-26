@@ -1,7 +1,7 @@
 import re
 import sys
 
-from core.api.collection import ApiRequestCollector
+from core.api.collector import ApiRequestCollector
 from core.template import Template
 from core.api.teststep import ApiTestStep, log_msg
 from jsonpath_ng.parser import JsonPathParser
@@ -30,7 +30,13 @@ class ApiTestCase:
         """用例执行入口函数"""
         if self.case_message['apiList'] is None:
             raise RuntimeError("无法获取API相关数据, 请重试!!!")
-        for api_data in self.case_message['apiList']:
+        self._loop(self.case_message['apiList'], "root")
+
+    def _loop(self, api_list, loop_id, index=0):
+        """循环执行"""
+        while index < len(api_list):
+            api_data = api_list[index]
+            index += 1
             # 定义事务
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'])
             # 按json模板中的接口顺序收集ApiTestStep实例
@@ -38,16 +44,34 @@ class ApiTestCase:
             collector.collect(api_data)
             step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
             try:
-                # 判断是否执行
+                # 渲染逻辑控制器
+                self._render_controller(step)
+                # 循环控制器
+                if step.collector.controller["loopExec"] is not None and step.collector.controller["loopExec"] != "{}" \
+                        and not (loop_id != "root" and index == 1):
+                    # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
+                    loop = step.loop_exec()
+                    self.test.deleteTrans(-1)   # 循环前删除本次接口事务定义
+                    for i in range(loop[1]):  # 本次循环次数
+                        self.context[loop[0]] = i+1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                        _api_list = api_list[index-1: (index+loop[2]-1)]
+                        self._loop(_api_list, api_data["apiId"])
+                    index = index + loop[2] - 1  # 跳过本次循环中执行的接口
+                    continue    # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
+                # 条件控制器
                 if step.collector.controller["whetherExec"] is not None:
-                    if not step.judge_condition():
-                        self.test.deleteTrans(-1)   # 任意条件不满足 跳过执行 并删除该事务定义
+                    print(step.collector.controller["whetherExec"])
+                    msg = step.judge_condition()
+                    if msg is not True:
+                        self.test.updateTransStatus(3)   # 任意条件不满足 跳过执行
+                        self.test.debugLog('[{}][{}]接口执行条件为否: {}'.format(
+                            step.collector.apiId, step.collector.apiName, msg))
                         continue
                 # 执行前置脚本
                 if step.collector.controller["preScript"] is not None:
                     step.exec_script(step.collector.controller["preScript"])
-                # 渲染
-                self._render(step)
+                # 渲染主体
+                self._render_content(step)
                 # 执行step, 接口参数移除，接口请求，接口响应，断言操作，依赖参数提取
                 step.execute()
                 # 执行后置脚本
@@ -74,7 +98,11 @@ class ApiTestCase:
                 else:
                     raise e
 
-    def _render(self, step):
+    def _render_controller(self, step):
+        self.template.init(step.collector.controller)
+        step.collector.controller = self.template.render()
+
+    def _render_content(self, step):
         self.template.init(step.collector.path)
         step.collector.path = self.template.render()
         if step.collector.others.get('params') is not None:

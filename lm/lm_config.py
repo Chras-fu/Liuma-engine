@@ -52,5 +52,8 @@ class LMConfig(object):
         self.header = reader.option("Header")
         self.platform_proxy = reader.option("PlatformProxy")
         self.browser_opt = reader.data("WebDriver", "options")
-        self.browser_path = os.path.join(BROWSER_PATH, reader.data("WebDriver", "path"))
+        if self.browser_opt == "remote" or "/" in self.browser_path:
+            self.browser_path = reader.data("WebDriver", "path")
+        else:
+            self.browser_path = os.path.join(BROWSER_PATH, reader.data("WebDriver", "path"))
 

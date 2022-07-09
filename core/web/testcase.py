@@ -25,6 +25,10 @@ class WebTestCase:
             opt = webdriver.ChromeOptions()
             opt.add_argument("--headless")
             opt.add_argument("--no-sandbox")
+        elif test.driver["browser_opt"] == "remote":
+            caps = {
+                'browserName': 'chrome'
+            }
         else:
             opt = webdriver.ChromeOptions()
             opt.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -33,7 +37,10 @@ class WebTestCase:
             if old_driver is not None:
                 old_driver.quit()
             test.driver["driver"] = None
-            self.driver = webdriver.Chrome(executable_path=test.driver["browser_path"], options=opt)
+            if test.driver["browser_opt"] == "remote":
+                self.driver = webdriver.Remote(command_executor=test.driver["browser_path"], desired_capabilities=caps)
+            else:
+                self.driver = webdriver.Chrome(executable_path=test.driver["browser_path"], options=opt)
         else:
             if old_driver is not None:
                 self.driver = old_driver

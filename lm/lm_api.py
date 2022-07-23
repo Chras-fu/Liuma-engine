@@ -259,6 +259,8 @@ class LMApi(Api):
                         DebugLogger("token校验错误 重新申请token", file_path=log_path)
                         self.apply_token()
                         continue
+                    else:
+                        ErrorLogger("截图%s上传失败" % uuid, file_path=log_path)
                 else:
                     DebugLogger("调用上传截图接口 响应状态为：%s" % res.status_code, file_path=log_path)
             except Exception as e:

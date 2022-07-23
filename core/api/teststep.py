@@ -2,9 +2,7 @@ import datetime
 from time import sleep
 from requests import request, Session
 from copy import deepcopy
-from jsonpath_ng.parser import JsonPathParser
 import json
-import jsonpath
 
 from core.assertion import LMAssert
 from tools.utils.utils import extract, ExtractValueError, url_join
@@ -46,11 +44,11 @@ class ApiTestStep:
                     c_key = REQUEST_CNAME_MAP[key] if key in REQUEST_CNAME_MAP else key
                     if key == 'files':
                         if isinstance(value, dict):
-                            request_log += '{}: {}<br>'.format(c_key, [i[0] for i in value.values()])
+                            request_log += '{}: {}<br>'.format(c_key, ["文件长度%s: %s" % (k, len(v)) for k,v in value.items()])
                         if isinstance(value, list):
                             request_log += '{}: {}<br>'.format(c_key, [i[1][0] for i in value])
                     else:
-                        request_log += '{}: {}<br>'.format(c_key, log_msg(value))
+                        request_log += '{}: {}<br>'.format(c_key, dict2str(value))
             self.test.debugLog(request_log[:-4])
             if self.collector.body_type == "form-urlencoded":
                 self.collector.others['data'] = urlencode(self.collector.others['data'])
@@ -78,10 +76,9 @@ class ApiTestStep:
             response_log += '响应码: {}<br>'.format(self.status_code)
             response_log += '响应头: {}<br>'.format(dict2str(self.response_headers))
             if 'content-disposition' not in [key.lower() for key in self.response_headers.keys()]:
-                response_text = '<b>响应体: {}</b>'.format(log_msg(self.response_content))
+                response_text = '<b>响应体: {}</b>'.format(dict2str(self.response_content))
             else:
                 response_text = '<b>响应体: 文件内容暂不展示, 长度{}</b>'.format(len(self.response_content_bytes))
-            # 响应体长度不能超过50000
             response_log += response_text
             self.test.debugLog(response_log)
             # 断言
@@ -94,9 +91,32 @@ class ApiTestStep:
                 sleep(int(self.collector.controller["sleepAfterRun"]))
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
 
-    def judge_condition(self):
-        conditions = json.loads(self.collector.controller["whetherExec"])
-        for condition in conditions:
+    def looper_controller(self, case, api_list, index):
+        """循环控制器"""
+        if "type" in self.collector.looper and self.collector.looper["type"] == "WHILE":
+            # while循环 且兼容之前只有for循环
+            loop_start_time = datetime.datetime.now()
+            while self.collector.looper["timeout"] == 0 or (datetime.datetime.now() - loop_start_time).seconds * 1000 \
+                    < self.collector.looper["timeout"]:     # timeout为0时可能会死循环 慎重选择
+                # 渲染循环控制控制器 每次循环都需要渲染
+                _looper = case._render_looper(self.collector.looper)
+                result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
+                if not result:
+                    break
+                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                case._loop_execute(_api_list, api_list[index]["apiId"])
+        else:
+            # 渲染循环控制控制器 for只需渲染一次
+            _looper = case._render_looper(self.collector.looper)
+            for i in range(_looper["times"]):  # 本次循环次数
+                self.context[_looper["indexName"]] = i + 1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                case._loop_execute(_api_list, api_list[index]["apiId"])
+
+    def condition_controller(self, case):
+        """条件控制器"""
+        _conditions = case._render_conditions(self.collector.conditions)
+        for condition in _conditions:
             try:
                 result, msg = LMAssert(condition['assertion'], condition['target'], condition['expect']).compare()
                 if not result:
@@ -105,21 +125,6 @@ class ApiTestStep:
                 return str(e)
         else:
             return True
-
-    def loop_exec(self):
-        loop = json.loads(self.collector.controller["loopExec"])
-        print(loop)
-        _loop_index_name = loop["indexName"]
-        try:
-            _loop_times = int(loop["times"])
-        except:
-            _loop_times = 1
-        try:
-            _loop_num = int(loop["num"])
-        except:
-            _loop_num = 1
-        return _loop_index_name, _loop_times, _loop_num
-
 
     def exec_script(self, code):
         """执行前后置脚本"""
@@ -227,27 +232,11 @@ class ApiTestStep:
 
 def dict2str(data):
     if isinstance(data, dict):
-        tmp_data = deepcopy(data)
-        if len(tmp_data) > 0:
-            parser = JsonPathParser()
-            for i, j in zip(jsonpath.jsonpath(tmp_data, '$..'), jsonpath.jsonpath(tmp_data, '$..', result_type="PATH")):
-                expr = parser.parse(j)
-                if isinstance(i, bytes):
-                    expr.update(tmp_data, '字节数据暂不展示, 长度为{}'.format(len(i)))
-        return json.dumps(tmp_data, ensure_ascii=False)
+        return json.dumps(data, ensure_ascii=False)
     elif not isinstance(data, str):
         return str(data)
     else:
         return data
-
-
-def log_msg(value):
-    temp_value = dict2str(value)
-    temp_value_len = len(temp_value)
-    if temp_value_len <= 15000:
-        return temp_value
-    else:
-        return '数据长度{}超过15000, 暂不展示'.format(temp_value_len)
 
 
 class RemoveParamError(Exception):

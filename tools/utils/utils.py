@@ -174,7 +174,7 @@ def handle_files(files):
     body_files = []
     for item in files:
         file_name = item["name"]
-        file_value = "{{@loadfile(%s)}}" % item["value"]
+        file_value = "{{@loadfile(%s)}}" % item["id"]
         body_files.append(("file", (file_name, file_value)))
     return body_files
 

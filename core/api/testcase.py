@@ -3,7 +3,7 @@ import sys
 
 from core.api.collector import ApiRequestCollector
 from core.template import Template
-from core.api.teststep import ApiTestStep, log_msg
+from core.api.teststep import ApiTestStep, dict2str
 from jsonpath_ng.parser import JsonPathParser
 
 from tools.utils.utils import get_case_message, get_json_relation, handle_params_data
@@ -30,43 +30,36 @@ class ApiTestCase:
         """用例执行入口函数"""
         if self.case_message['apiList'] is None:
             raise RuntimeError("无法获取API相关数据, 请重试!!!")
-        self._loop(self.case_message['apiList'], "root")
+        self._loop_execute(self.case_message['apiList'], "root")
 
-    def _loop(self, api_list, loop_id, index=0):
+    def _loop_execute(self, api_list, loop_id, index=0):
         """循环执行"""
         while index < len(api_list):
             api_data = api_list[index]
             index += 1
+            # 定义收集器
+            collector = ApiRequestCollector()
+            step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
+            # 循环控制器
+            step.collector.collect_looper(api_data)
+            if len(step.collector.looper) > 0 and not (loop_id != "root" and index == 1):
+                # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
+                step.looper_controller(self, api_list, index)
+                index = index + step.collector.looper["num"] - 1  # 跳过本次循环中执行的接口
+                continue  # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
             # 定义事务
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'])
-            # 按json模板中的接口顺序收集ApiTestStep实例
-            collector = ApiRequestCollector()
-            collector.collect(api_data)
-            step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
+            # 条件控制器
+            step.collector.collect_conditions(api_data)
+            if len(step.collector.conditions) > 0:
+                result = step.condition_controller(self)
+                if result is not True:
+                    self.test.updateTransStatus(3)  # 任意条件不满足 跳过执行
+                    self.test.debugLog('[{}][{}]接口条件控制器判断为否: {}'.format(api_data['apiId'], api_data['apiName'], result))
+                    continue
+            # 收集请求主体并执行
+            step.collector.collect(api_data)
             try:
-                # 渲染逻辑控制器
-                self._render_controller(step)
-                # 循环控制器
-                if step.collector.controller["loopExec"] is not None and step.collector.controller["loopExec"] != "{}" \
-                        and not (loop_id != "root" and index == 1):
-                    # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
-                    loop = step.loop_exec()
-                    self.test.deleteTrans(-1)   # 循环前删除本次接口事务定义
-                    for i in range(loop[1]):  # 本次循环次数
-                        self.context[loop[0]] = i+1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
-                        _api_list = api_list[index-1: (index+loop[2]-1)]
-                        self._loop(_api_list, api_data["apiId"])
-                    index = index + loop[2] - 1  # 跳过本次循环中执行的接口
-                    continue    # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
-                # 条件控制器
-                if step.collector.controller["whetherExec"] is not None:
-                    print(step.collector.controller["whetherExec"])
-                    msg = step.judge_condition()
-                    if msg is not True:
-                        self.test.updateTransStatus(3)   # 任意条件不满足 跳过执行
-                        self.test.debugLog('[{}][{}]接口执行条件为否: {}'.format(
-                            step.collector.apiId, step.collector.apiName, msg))
-                        continue
                 # 执行前置脚本
                 if step.collector.controller["preScript"] is not None:
                     step.exec_script(step.collector.controller["preScript"])
@@ -81,15 +74,15 @@ class ApiTestCase:
                 if step.assert_result['result']:
                     self.test.debugLog('[{}][{}]接口断言成功: {}'.format(step.collector.apiId,
                                                                    step.collector.apiName,
-                                                                   log_msg(step.assert_result['checkMessages'])))
+                                                                   dict2str(step.assert_result['checkMessages'])))
                 else:
                     self.test.errorLog('[{}][{}]接口断言失败: {}'.format(step.collector.apiId,
                                                                    step.collector.apiName,
-                                                                   log_msg(step.assert_result['checkMessages'])))
-                    raise AssertionError(log_msg(step.assert_result['checkMessages']))
+                                                                   dict2str(step.assert_result['checkMessages'])))
+                    raise AssertionError(dict2str(step.assert_result['checkMessages']))
             except Exception as e:
                 error_info = sys.exc_info()
-                if step.collector.controller["errorContinue"].lower() == "true":
+                if collector.controller["errorContinue"].lower() == "true":
                     # 失败后继续执行
                     if issubclass(error_info[0], AssertionError):
                         self.test.recordFailStatus(error_info)
@@ -98,9 +91,19 @@ class ApiTestCase:
                 else:
                     raise e
 
-    def _render_controller(self, step):
-        self.template.init(step.collector.controller)
-        step.collector.controller = self.template.render()
+    def _render_looper(self, looper):
+        self.template.init(looper)
+        _looper = self.template.render()
+        try:
+            times = int(_looper["times"])
+        except:
+            times = 1
+        _looper["times"] = times
+        return _looper
+
+    def _render_conditions(self, conditions):
+        self.template.init(conditions)
+        return self.template.render()
 
     def _render_content(self, step):
         self.template.init(step.collector.path)

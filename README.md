@@ -48,6 +48,7 @@
 ## 三、开发环境
 
 环境依赖: Python3.6+、Chrome、ChromeDriver(参考:[驱动说明](./browser/chrome_setting.md))
+
 IDE推荐: python使用pyCharm
 
 1. 引擎启动

@@ -7,6 +7,8 @@
 
 项目体验地址: [演示环境](http://demo.liumatest.cn)，用户名密码: demo/123456
 
+如果本项目对您有帮助，请给我们一个Star，您的支持是我们前进的动力。
+
 
 ## 二、功能介绍
 
@@ -54,15 +56,20 @@ Step1: 安装依赖包 pip3 install -r requirements.txt
 
 Step2: 流马测试平台->引擎管理->注册引擎 保存engine-code和engine-secret
 
-Step3: engine-code和engine-secret填写到/config/config.ini文件对应位置
+Step3: engine-code和engine-secret填写在/config/config.ini文件中对应位置
 
-Step4: 修改/config/config.ini文件中platform->url为后端地址
+Step4: 修改/config/config.ini文件中Platform->url为后端地址
 
-Step5: 启动引擎 python3 startup.py
+Step5: 如linux启动，修改/config/config.ini文件中WebDriver->options为headless
 
-Step6: 平台引擎管理查看自己的引擎 显示在线 证明启动成功
+Step6: 如linux/mac启动，修改/config/config.ini文件中WebDriver->path为chromedriver
+
+Step7: 启动引擎 python3 startup.py
 ```
 
+2. 验证启动
+
+平台引擎管理查看自己的引擎，显示在线，证明启动成功。再编写一个简单的接口用例并执行，执行成功并返回报告，引擎注册完成。
 
 ## 四、容器部署
 

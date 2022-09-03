@@ -43,9 +43,9 @@ class CustomFaker(Faker):
 
     def _load_lm_func(self, provider):
         for custom in self.lm_func:
-            func = provider.lm_custom_func(custom["code"], custom["params"].keys())
+            func = provider.lm_custom_func(custom["code"], custom["params"]["names"])
             params = []
-            for value in custom["params"].values():
+            for value in custom["params"]["types"]:
                 if value == "Int":
                     params.append(int)
                 elif value == "Float":

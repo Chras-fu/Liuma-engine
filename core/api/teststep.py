@@ -52,6 +52,8 @@ class ApiTestStep:
             self.test.debugLog(request_log[:-4])
             if self.collector.body_type == "form-urlencoded":
                 self.collector.others['data'] = urlencode(self.collector.others['data'])
+            if self.collector.body_type in ("text", "xml", "html"):
+                self.collector.others['data'] = self.collector.others['data'].encode("utf-8")
             if 'files' in self.collector.others and self.collector.others['files'] is not None:
                 self.pop_content_type()
             url = url_join(self.collector.url, self.collector.path)

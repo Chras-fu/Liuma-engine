@@ -231,6 +231,10 @@ class ApiTestStep:
         if pop_key is not None:
             self.collector.others['headers'].pop(pop_key)
 
+    def handle_headers(self):
+        for key, value in self.collector.others["headers"].items():
+            self.collector.others["headers"][key] = str(value)
+
 
 def dict2str(data):
     if isinstance(data, dict):

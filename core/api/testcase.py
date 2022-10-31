@@ -123,6 +123,7 @@ class ApiTestCase:
             pop_key = None
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
+        step.handle_headers()   # 请求头处理为str
         self.template.set_help_data(step.collector.path, step.collector.others.get('headers'), query, body)
         if query is not None:
             for expr, value in get_json_relation(query, "query"):

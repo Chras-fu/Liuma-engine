@@ -93,6 +93,7 @@ class WebTestCase:
     def _after_execute(self):
         if self.case_message["closeDriver"]:
             self.driver.quit()
+            self.test.driver["driver"] = None
         else:
             self.test.driver["driver"] = self.driver
 

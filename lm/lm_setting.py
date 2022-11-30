@@ -81,7 +81,7 @@ class LMSetting(object):
                 "browser_path": self.config.browser_path,
                 "driver": None
             }
-            session = Session()
+            session = LMSession()
             context = dict()
             test_case = {
                 "driver": driver,
@@ -145,3 +145,9 @@ class LMSetting(object):
                     del test_plan[collection]
         return test_plan
 
+    
+class LMSession(object):
+
+    def __init__(self):
+        self.lm_session = Session()
+        

@@ -109,7 +109,7 @@ class LMCase(unittest.TestCase):
 
     def saveScreenShot(self, name, screen_shot):
         """保存截图"""
-        uuid = time.strftime("%Y%m%d") + "-" +str(uuid1())
+        uuid = time.strftime("%Y%m%d") + "_" +str(uuid1())
         task_id = getattr(self, "task_id")
         task_image_path = os.path.join(IMAGE_PATH, task_id)
         try:

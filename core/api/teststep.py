@@ -52,7 +52,7 @@ class ApiTestStep:
             self.test.debugLog(request_log[:-4])
             if self.collector.body_type == "form-urlencoded" and 'data' in self.collector.others:
                 self.collector.others['data'] = urlencode(self.collector.others['data'])
-            if self.collector.body_type in ("text", "xml", "html") and 'data' in self.collector.others:
+            if self.collector.body_type in ("text", "xml", "html") and 'data' in self.collector.others and isinstance(self.collector.others['data'], str):
                 self.collector.others['data'] = self.collector.others['data'].encode("utf-8")
             if 'files' in self.collector.others and self.collector.others['files'] is not None:
                 self.pop_content_type()

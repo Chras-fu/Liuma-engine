@@ -52,12 +52,8 @@ class LMSetting(object):
             for collection_map in self.task["testCollectionList"]:
                 collection = collection_map["collectionId"]
                 test_case_list = collection_map["testCaseList"]
-                driver = {
-                    "browser_opt": self.config.browser_opt,
-                    "browser_path": self.config.browser_path,
-                    "driver": None
-                }
-                session = Session()
+                session = LMSession()
+                driver = LMDriver()
                 context = dict()
                 for case in test_case_list:
                     test_case = {
@@ -76,12 +72,8 @@ class LMSetting(object):
         else:
             collection_map = self.task["testCollectionList"][0]
             collection = collection_map["collectionId"]
-            driver = {
-                "browser_opt": self.config.browser_opt,
-                "browser_path": self.config.browser_path,
-                "driver": None
-            }
             session = LMSession()
+            driver = LMDriver()
             context = dict()
             test_case = {
                 "driver": driver,
@@ -147,7 +139,16 @@ class LMSetting(object):
 
     
 class LMSession(object):
-
+    """API测试专用"""
     def __init__(self):
-        self.lm_session = Session()
-        
+        self.session = Session()
+
+
+class LMDriver(object):
+    """WEB测试专用"""
+    def __init__(self):
+        self.driver = None
+        self.config = LMConfig()
+        self.browser_opt = self.config.browser_opt
+        self.browser_path = self.config.browser_path
+

@@ -1,6 +1,6 @@
 from selenium.common.exceptions import NoSuchElementException
 
-from core.web.driver.operation import Operation
+from core.web.driver import Operation
 
 
 class Relation(Operation):

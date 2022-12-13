@@ -1,6 +1,6 @@
 from selenium.common.exceptions import NoSuchElementException
 
-from core.web.driver.operation import Operation
+from core.web.driver import Operation
 from datetime import datetime
 from time import sleep
 

@@ -1,15 +1,14 @@
 import sys
-
 from jsonpath_ng.parser import JsonPathParser
-from selenium import webdriver
 from core.template import Template
-from core.web.collector import WebOperationCollector
-from core.web.teststep import WebTestStep
+from core.app.collector import WebOperationCollector
+from core.app.teststep import AppTestStep
+from core.app.device import connect_device
 from tools.utils.utils import get_case_message, handle_operation_data, handle_params_data
 import re
 
 
-class WebTestCase:
+class AppTestCase:
     def __init__(self, test):
         self.test = test
         self.context = test.context
@@ -20,31 +19,7 @@ class WebTestCase:
         setattr(test, 'test_case_desc', self.case_message['comment'])
         self.functions = self.case_message['functions']
         self.params = handle_params_data(self.case_message['params'])
-        if test.driver.browser_opt == "headless":
-            opt = webdriver.ChromeOptions()
-            opt.add_argument("--headless")
-            opt.add_argument("--no-sandbox")
-        elif test.driver.browser_opt == "remote":
-            caps = {
-                'browserName': 'chrome'
-            }
-        else:
-            opt = webdriver.ChromeOptions()
-            opt.add_experimental_option('excludeSwitches', ['enable-logging'])
-        old_driver = test.driver.driver
-        if self.case_message["startDriver"]:
-            if old_driver is not None:
-                old_driver.quit()
-            test.driver.driver = None
-            if test.driver.browser_opt == "remote":
-                self.driver = webdriver.Remote(command_executor=test.driver.browser_path, desired_capabilities=caps)
-            else:
-                self.driver = webdriver.Chrome(executable_path=test.driver.browser_path, options=opt)
-        else:
-            if old_driver is not None:
-                self.driver = old_driver
-            else:
-                raise RuntimeError("无法找到已启动的浏览器进程 请检查用例开关驱动配置")
+        self.device = self._before_execute()
         self.template = Template(self.context, self.functions, self.params)
         self.parser = JsonPathParser()
         self.comp = re.compile(r"\{\{.*?\}\}")
@@ -54,7 +29,7 @@ class WebTestCase:
         opt_content = None
         if self.case_message['optList'] is None:
             self._after_execute()
-            raise RuntimeError("无法获取WEB测试相关数据, 请重试!!!")
+            raise RuntimeError("无法获取APP测试相关数据, 请重试!!!")
         step_count = len(self.case_message['optList'])
         step_n = 0
         try:
@@ -67,7 +42,7 @@ class WebTestCase:
                                       self._get_opt_content(opt_content['operationElement']))
                 collector = WebOperationCollector()
                 collector.collect(opt_content)
-                step = WebTestStep(self.test, self.driver, collector)
+                step = AppTestStep(self.test, self.device, collector)
                 self._render(step)
                 step.execute()
                 self._assert_solve(step)
@@ -76,7 +51,7 @@ class WebTestCase:
         except Exception as e:
             if not isinstance(e, AssertionError):
                 self.test.saveScreenShot(opt_content['operationTrans'] if opt_content is not None else opt_content,
-                                         self.driver.get_screenshot_as_png())
+                                         self.device.screenshot())
             raise e
         finally:
             self._after_execute()
@@ -89,12 +64,19 @@ class WebTestCase:
                 content = "%s\n %s: %s" % (content, key, element["target"])
         return content
 
-    def _after_execute(self):
-        if self.case_message["closeDriver"]:
-            self.driver.quit()
-            self.test.driver.driver = None
+    def _before_execute(self):
+        device = connect_device(self.case_message['deviceSystem'], self.case_message['deviceUrl'])
+        if self.case_message['deviceSystem'] == 'android':
+            device.app_start(self.case_message['appId'], self.case_message['activity'])
+            return device
         else:
-            self.test.driver.driver = self.driver
+            device = device.session(self.case_message['appId'])
+            return device
+
+    def _after_execute(self):
+        self.device.app_stop(self.case_message['appId'])
+        if self.case_message['deviceSystem'] == 'apple':
+            self.device.close()
 
     def _render(self, step):
         if step.collector.opt_data is not None:
@@ -116,7 +98,7 @@ class WebTestCase:
                 self.test.errorLog('[{}][{}]断言失败: {}'.format(step.collector.id,
                                                              step.collector.opt_name,
                                                              step.result[1]))
-                self.test.saveScreenShot(step.collector.opt_trans, self.driver.get_screenshot_as_png())
+                self.test.saveScreenShot(step.collector.opt_trans, self.device.screenshot())
                 if "continue" in step.collector.opt_data and step.collector.opt_data["continue"] is True:
                     try:
                         raise AssertionError(step.result[1])

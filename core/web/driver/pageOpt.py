@@ -4,7 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import wait, expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from core.web.driver.operation import Operation
+from core.web.driver import Operation
 
 
 class Page(Operation):

@@ -62,14 +62,14 @@ class ApiTestStep:
                 self.test.debugLog("请求前等待%sS" % int(self.collector.controller["sleepBeforeRun"]))
             start_time = datetime.datetime.now()
             if self.collector.controller["useSession"].lower() == 'true' and self.collector.controller["saveSession"].lower() == "true":
-                res = self.session.lm_session.request(self.collector.method, url, **self.collector.others)
+                res = self.session.session.request(self.collector.method, url, **self.collector.others)
             elif self.collector.controller["useSession"].lower() == "true":
-                session = deepcopy(self.session.lm_session)
+                session = deepcopy(self.session.session)
                 res = session.request(self.collector.method, url, **self.collector.others)
             elif self.collector.controller["saveSession"].lower() == "true":
                 session = Session()
                 res = session.request(self.collector.method, url, **self.collector.others)
-                self.session.lm_session = session
+                self.session.session = session
             else:
                 res = request(self.collector.method, url, **self.collector.others)
             end_time = datetime.datetime.now()

@@ -110,6 +110,8 @@ def handle_operation_data(data):
                 data_value = int(data_value)
             elif data_type == "Float":
                 data_value = float(data_value)
+            elif data_type == "Number":
+                data_value == float(data_value) if "." in data_value else int(data_value)
             else:
                 data_value = data_value
         except:

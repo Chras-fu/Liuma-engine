@@ -117,7 +117,7 @@ class Relation(Operation):
     def get_alert_text(self, save_name):
         """获取弹框文本 IOS专属"""
         try:
-            actual = self.device.alert.text()
+            actual = self.device.alert.text
             self.test.debugLog("成功获取弹框文本:%s" % str(actual))
         except Exception as e:
             self.test.errorLog("无法获取弹框文本")

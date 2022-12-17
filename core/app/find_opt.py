@@ -51,7 +51,7 @@ def find_system_opt(operate_name: str):
 
     @keywords("系统按键")
     def press(test, device, **kwargs):
-        System(test, device).press(kwargs["data"]["key"])
+        System(test, device).press(kwargs["data"]["keycode"])
 
     @keywords("屏幕截图")
     def screenshot(test, device, **kwargs):
@@ -202,9 +202,37 @@ def find_assertion_opt(operate_name: str):
 
         return back
 
-    @keywords("断言页面标题")
-    def assert_page_title(test, device, **kwargs):
-        return Assertion(test, device).assert_page_title(kwargs["data"]["assertion"], kwargs["data"]["expect"])
+    @keywords("断言元素存在")
+    def assert_ele_exists(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_exists(kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言元素文本")
+    def assert_ele_text(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_text(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言元素属性")
+    def assert_ele_attribute(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_attribute(kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言元素位置")
+    def assert_ele_center(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_center(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言元素X坐标")
+    def assert_ele_x(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_x(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言元素Y坐标")
+    def assert_ele_y(test, device, **kwargs):
+        return Assertion(test, device).assert_ele_y(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("断言弹框存在")
+    def assert_alert_exists(test, device, **kwargs):
+        return Assertion(test, device).assert_alert_exists(**kwargs["data"])
+
+    @keywords("断言弹框文本")
+    def assert_alert_text(test, device, **kwargs):
+        return Assertion(test, device).assert_alert_text(**kwargs["data"])
 
     @keywords("自定义")
     def custom(test, device, **kwargs):
@@ -280,9 +308,38 @@ def find_condition_opt(operate_name: str):
 
         return back
 
-    @keywords("判断页面标题")
-    def condition_page_title(test, device, **kwargs):
-        return Condition(test, device).condition_page_title(kwargs["data"]["assertion"], kwargs["data"]["expect"])
+    @keywords("判断元素存在")
+    def condition_ele_exists(test, device, **kwargs):
+        return Condition(test, device).condition_ele_exists(kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("判断元素文本")
+    def condition_ele_text(test, device, **kwargs):
+        return Condition(test, device).condition_ele_text(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("判断元素属性")
+    def condition_ele_attribute(test, device, **kwargs):
+        return Condition(test, device).condition_ele_attribute(kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("判断元素位置")
+    def condition_ele_center(test, device, **kwargs):
+        return Condition(test, device).condition_ele_center(kwargs["system"], kwargs["element"]["element"],
+                                                         **kwargs["data"])
+
+    @keywords("判断元素X坐标")
+    def condition_ele_x(test, device, **kwargs):
+        return Condition(test, device).condition_ele_x(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("判断元素Y坐标")
+    def condition_ele_y(test, device, **kwargs):
+        return Condition(test, device).condition_ele_y(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+
+    @keywords("判断弹框存在")
+    def condition_alert_exists(test, device, **kwargs):
+        return Condition(test, device).condition_alert_exists(**kwargs["data"])
+
+    @keywords("判断弹框文本")
+    def condition_alert_text(test, device, **kwargs):
+        return Condition(test, device).condition_alert_text(**kwargs["data"])
 
     @keywords("自定义")
     def custom(test, device, **kwargs):

@@ -95,13 +95,13 @@ class System(Operation):
             self.test.errorLog("无法执行返回")
             raise e
 
-    def press(self, key):
+    def press(self, keycode):
         """系统按键"""
         try:
-            self.device.press(key)
-            self.test.debugLog("成功执行按下系统键位: %s" % key)
+            self.device.press(keycode)
+            self.test.debugLog("成功执行按下系统键位: %s" % keycode)
         except Exception as e:
-            self.test.errorLog("无法执行按下系统键位: %s" % key)
+            self.test.errorLog("无法执行按下系统键位: %s" % keycode)
             raise e
 
     def screenshot(self, name):

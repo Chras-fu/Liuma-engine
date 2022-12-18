@@ -7,7 +7,7 @@ import traceback
 from uuid import uuid1
 from core.api.testcase import ApiTestCase
 from core.web.testcase import WebTestCase
-# from core.app.testcase import AppTestCase
+from core.app.testcase import AppTestCase
 from lm.lm_config import IMAGE_PATH, LMConfig
 
 
@@ -25,8 +25,8 @@ class LMCase(unittest.TestCase):
             ApiTestCase(test=self).execute()
         elif self.case_type == "WEB":
             WebTestCase(test=self).execute()
-        # else:
-        #     AppTestCase(test=self).execute()
+        else:
+            AppTestCase(test=self).execute()
 
     def doCleanups(self):
         unittest.TestCase.doCleanups(self)

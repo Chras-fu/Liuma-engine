@@ -59,7 +59,7 @@ class Assertion(Operation):
             self.test.errorLog("无法获取元素位置")
             raise e
         else:
-            result, msg = LMAssert(assertion, actual, expect).compare()
+            result, msg = LMAssert(assertion, str(actual), expect).compare()
             return result, msg
 
     def assert_ele_x(self, system, element, assertion, expect):

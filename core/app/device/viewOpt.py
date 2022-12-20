@@ -74,7 +74,7 @@ class View(Operation):
             raise e
 
     def swipe(self, system, fx, fy, tx, ty, duration=None):
-        """滑动 百分比或坐标值"""
+        """坐标滑动 百分比或坐标值"""
         try:
             if system == "android":
                 if duration == "":

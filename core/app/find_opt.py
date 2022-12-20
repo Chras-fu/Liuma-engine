@@ -151,7 +151,7 @@ def find_view_opt(operate_name: str):
 
     @keywords("拖动到元素")
     def drag_to_ele(test, device, **kwargs):
-        View(test, device).drag_to_ele(**kwargs["element"])
+        View(test, device).drag_to_ele(kwargs["element"]["startElement"],kwargs["element"]["endElement"])
 
     @keywords("拖动到坐标")
     def drag_to_coord(test, device, **kwargs):
@@ -255,35 +255,35 @@ def find_relation_opt(operate_name: str):
 
         return back
 
-    @keywords("获取屏幕尺寸")
+    @keywords("提取屏幕尺寸")
     def get_window_size(test, device, **kwargs):
         Relation(test, device).get_window_size(kwargs["system"], kwargs["data"]["save_name"])
 
-    @keywords("获取屏幕宽度")
+    @keywords("提取屏幕宽度")
     def get_window_width(test, device, **kwargs):
         Relation(test, device).get_window_width(kwargs["system"], kwargs["data"]["save_name"])
 
-    @keywords("获取屏幕高度")
+    @keywords("提取屏幕高度")
     def get_window_height(test, device, **kwargs):
         Relation(test, device).get_window_height(kwargs["system"], kwargs["data"]["save_name"])
 
-    @keywords("获取元素文本")
+    @keywords("提取元素文本")
     def get_ele_text(test, device, **kwargs):
         Relation(test, device).get_ele_text(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["save_name"])
 
-    @keywords("获取元素位置")
+    @keywords("提取元素位置")
     def get_ele_center(test, device, **kwargs):
         Relation(test, device).get_ele_center(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["save_name"])
 
-    @keywords("获取元素X坐标")
+    @keywords("提取元素X坐标")
     def get_ele_x(test, device, **kwargs):
         Relation(test, device).get_ele_x(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["save_name"])
 
-    @keywords("获取元素Y坐标")
+    @keywords("提取元素Y坐标")
     def get_ele_y(test, device, **kwargs):
         Relation(test, device).get_ele_y(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["save_name"])
 
-    @keywords("获取弹框文本")
+    @keywords("提取弹框文本")
     def get_alert_text(test, device, **kwargs):
         Relation(test, device).get_alert_text(kwargs["data"]["save_name"])
 

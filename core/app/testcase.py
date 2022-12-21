@@ -39,7 +39,7 @@ class AppTestCase:
                     continue
                 opt_content = self.case_message['optList'][step_n]
                 self.test.defineTrans(opt_content["operationId"], opt_content['operationTrans'],
-                                      self._get_opt_content(opt_content['operationElement']))
+                                      self._get_opt_content(opt_content['operationElement']), opt_content['operationDesc'])
                 collector = WebOperationCollector()
                 collector.collect(opt_content)
                 step = AppTestStep(self.test, self.device, collector)

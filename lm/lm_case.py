@@ -61,12 +61,13 @@ class LMCase(unittest.TestCase):
         if len(self.trans_list) > 0:
             self.trans_list[-1]["during"] = during
 
-    def defineTrans(self, id, name, content=""):
+    def defineTrans(self, id, name, content="", desc=None):
         """定义事务"""
         trans_dict = {
             "id": id,
             "name": name,
             "content": content,
+            "description": desc,
             "log": "",
             "during": 0,
             "status": "",
@@ -128,7 +129,7 @@ class LMCase(unittest.TestCase):
     def handleResult(self):
         """结果处理"""
         if len(self.trans_list) == 0:
-            self.defineTrans(self.case_name.split("_")[1], "未知")
+            self.defineTrans(self.case_name.split("_")[1], "未知", "未知")
         isFail = False
         isError = False
         error_type = None

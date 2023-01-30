@@ -2,6 +2,8 @@
 import os
 import copy
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from requests import Session
 import zipfile
 from lm.lm_run import LMRun
@@ -93,6 +95,7 @@ class LMSetting(object):
         if self.task["reRun"]:
             runTime = 2
         task_id = self.task["taskId"]
+        max_thread = self.task["maxThread"]
         queue.put("run_all_start--%s" % task_id)
         for index in range(runTime):
             if index == 0:
@@ -103,16 +106,12 @@ class LMSetting(object):
             if len(test_plan) > 0:
                 queue.put("start_run_index--%s" % index)
                 default_lock = threading.RLock()
-                threads = []
-                for collection, test_case_list in test_plan.items():
-                    if len(test_case_list) != 0:
-                        s_thread = threading.Thread(target=LMRun(test_case_list, index + 1, default_result,
-                                                                 default_lock, queue).run_test)
-                        threads.append(s_thread)
-                for t in threads:
-                    t.start()
-                for t in threads:
-                    t.join()
+                # 进行线程池管理执行 设置最大并发
+                with ThreadPoolExecutor(max_workers=max_thread) as t:
+                    executors = [t.submit(LMRun(test_case_list, index + 1, default_result, default_lock,
+                                                queue).run_test, ) for test_case_list in test_plan.values()]
+                    as_completed(executors)
+
         queue.put("run_all_stop--%s" % task_id)
         current_exec_status.value = 1
 

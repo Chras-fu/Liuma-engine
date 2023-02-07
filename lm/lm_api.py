@@ -11,7 +11,7 @@ class Api(object):
 
     def __init__(self):
         config = LMConfig()
-        self.url = config.url
+        self.url = config.url[:-1] if config.url.endswith("/") else config.url
         self.engine = config.engine
         self.secret = config.secret
         self.proxy = None

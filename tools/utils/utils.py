@@ -5,16 +5,21 @@ import jsonpath
 import copy
 
 
-def extract_by_jsonpath(api_data: dict, expression: str):
-    value = jsonpath.jsonpath(api_data, expression)
+def extract_by_jsonpath(data: (dict, str), expression: str):
+    if not isinstance(data, dict):
+        raise ExtractValueError('被提取的值不是json, 不支持jsonpath')
+    value = jsonpath.jsonpath(data, expression)
     if value:
         return value[0] if len(value) == 1 else value
     else:
         raise ExtractValueError('jsonpath表达式错误: {}'.format(expression))
 
 
-def extract_by_regex(api_data: dict, pattern: str):
-    content = json.dumps(api_data, ensure_ascii=False)
+def extract_by_regex(data: (dict, str), pattern: str):
+    if isinstance(data, dict):
+        content = json.dumps(data, ensure_ascii=False)
+    else:
+        content = data
     result = re.findall(pattern, content)
     if len(result) > 0:
         return result[0] if len(result) == 1 else result
@@ -71,7 +76,7 @@ def proxies_join(proxies: dict):
         raise ProxiesError("未设置代理账号或密码")
 
 
-def extract(name: str, data: dict, expression: str):
+def extract(name: str, data: (dict, str), expression: str):
     if name == 'jsonpath':
         return extract_by_jsonpath(data, expression)
     elif name == 'regular':

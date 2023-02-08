@@ -233,6 +233,8 @@ class ApiTestStep:
             self.collector.others['headers'].pop(pop_key)
 
     def handle_headers(self):
+        if self.collector.others["headers"] is None:
+            return
         for key, value in self.collector.others["headers"].items():
             self.collector.others["headers"][key] = str(value)
 

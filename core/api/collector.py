@@ -109,16 +109,6 @@ class ApiRequestCollector:
 
     def collect_headers(self, api_data):
         self.collect_other(api_data, 'headers')
-        if self.others['headers'] is None:
-            self.others['headers'] = {'Content-Type': 'application/json;charset=UTF-8'}
-        elif 'content-type' not in [key.lower() for key in self.others['headers'].keys()]:
-            self.others['headers']['Content-Type'] = 'application/json;charset=UTF-8'
-        else:
-            for key, value in self.others['headers'].items():
-                if key.lower() == 'content-type':
-                    if value is None or len(value) == 0:
-                        self.others['headers'][key] = 'application/json;charset=UTF-8'
-                    break
 
     def collect_cookies(self, api_data):
         if self.others['headers'] is not None:

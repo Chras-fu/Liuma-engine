@@ -36,17 +36,17 @@ class ApiTestCase:
         """循环执行"""
         while index < len(api_list):
             api_data = api_list[index]
-            index += 1
             # 定义收集器
             collector = ApiRequestCollector()
             step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
             # 循环控制器
             step.collector.collect_looper(api_data)
-            if len(step.collector.looper) > 0 and not (loop_id != "root" and index == 1):
+            if len(step.collector.looper) > 0 and not (loop_id != "root" and index == 0):
                 # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
                 step.looper_controller(self, api_list, index)
                 index = index + step.collector.looper["num"] - 1  # 跳过本次循环中执行的接口
                 continue  # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
+            index += 1
             # 定义事务
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'], api_data['apiDesc'])
             # 条件控制器

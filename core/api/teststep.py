@@ -106,14 +106,14 @@ class ApiTestStep:
                 result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
                 if not result:
                     break
-                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                _api_list = api_list[index: (index + _looper["num"])]
                 case._loop_execute(_api_list, api_list[index]["apiId"])
         else:
             # 渲染循环控制控制器 for只需渲染一次
             _looper = case._render_looper(self.collector.looper)
             for i in range(_looper["times"]):  # 本次循环次数
                 self.context[_looper["indexName"]] = i + 1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
-                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                _api_list = api_list[index: (index + _looper["num"])]
                 case._loop_execute(_api_list, api_list[index]["apiId"])
 
     def condition_controller(self, case):

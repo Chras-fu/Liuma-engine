@@ -65,7 +65,7 @@ class AppTestCase:
         return content
 
     def _before_execute(self):
-        device = connect_device(self.case_message['deviceSystem'], self.case_message['deviceUrl'])
+        device = connect_device(self.case_message['deviceSystem'], f"http://{self.case_message['deviceUrl']}")
         if self.case_message['deviceSystem'] == 'android':
             device.app_start(self.case_message['appId'], self.case_message['activity'])
             return device

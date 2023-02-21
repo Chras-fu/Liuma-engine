@@ -43,7 +43,7 @@ class View(Operation):
     def click_coord(self, x, y):
         """坐标单击 百分比或坐标值"""
         try:
-            self.device.click(x, y, timeout=3)
+            self.device.click(x, y)
             self.test.debugLog("成功坐标单击")
         except Exception as e:
             self.test.errorLog("无法坐标单击")

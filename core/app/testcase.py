@@ -65,6 +65,8 @@ class AppTestCase:
         return content
 
     def _before_execute(self):
+        if self.case_message['deviceUrl'] is None:
+            raise Exception("执行设备不在线 本用例执行失败")
         device = connect_device(self.case_message['deviceSystem'], f"http://{self.case_message['deviceUrl']}")
         if self.case_message['deviceSystem'] == 'android':
             device.app_start(self.case_message['appId'], self.case_message['activity'])

@@ -10,7 +10,7 @@ class WebTestStep:
 
     def execute(self):
         try:
-            self.test.debugLog('[{}]WEB操作[{}]开始'.format(self.collector.id, self.collector.opt_name))
+            self.test.debugLog('WEB操作[{}]开始'.format(self.collector.opt_name))
             opt_type = self.collector.opt_type
             if opt_type == "browser":
                 func = find_browser_opt(self.collector.opt_name)
@@ -35,7 +35,7 @@ class WebTestStep:
             self.result = func(self.test, self.driver, **opt_content)
             self.log_show()
         finally:
-            self.test.debugLog('[{}]WEB操作[{}]结束'.format(self.collector.id, self.collector.opt_name))
+            self.test.debugLog('WEB操作[{}]结束'.format(self.collector.opt_name))
 
     def log_show(self):
         msg = ""

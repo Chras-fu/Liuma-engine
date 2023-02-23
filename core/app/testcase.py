@@ -77,8 +77,6 @@ class AppTestCase:
 
     def _after_execute(self):
         self.device.app_stop(self.case_message['appId'])
-        if self.case_message['deviceSystem'] == 'apple':
-            self.device.close()
 
     def _render(self, step):
         if step.collector.opt_data is not None:

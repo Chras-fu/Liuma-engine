@@ -213,7 +213,7 @@ class LMApi(Api):
 
     def download_test_file(self, uuid):
         """下载测试文件"""
-        url = self.url + "/openapi/test/file/download/" + uuid
+        url = self.url + "/openapi/download/test/file/" + uuid
         for index in range(2):
             try:
                 if index > 0:

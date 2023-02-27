@@ -17,7 +17,7 @@ class LMAssert:
         try:
             if self.comparator in ["equal", "equals", "相等", "字符相等"]:  # 等于
                 assFailMsg = '实际值({})与预期值({}) 字符相等，条件为否：'.format(self.actual_result, self.expected_result)
-                assertpy.assert_that(self.actual_result).is_equal_to(self.expected_result)
+                assertpy.assert_that(str(self.actual_result)).is_equal_to(self.expected_result)
             elif self.comparator in ["equalsList", "数组相等"]:  # 列表相同，包括列表顺序也相同
                 assFailMsg = '实际值({})与预期值({}) 数组相等，条件为否：'.format(self.actual_result, self.expected_result)
                 assertpy.assert_that(LMAssert.str2list(self.actual_result)).is_equal_to(LMAssert.str2list(self.expected_result))
@@ -29,7 +29,7 @@ class LMAssert:
                 assertpy.assert_that(LMAssert.str2num(self.actual_result)).is_equal_to(LMAssert.str2num(self.expected_result))
             elif self.comparator in ["equalIgnoreCase", "相等(忽略大小写)"]:  # 忽略大小写等于
                 assFailMsg = '实际值({})与预期值({}) 相等(忽略大小写)，条件为否：'.format(self.actual_result, self.expected_result)
-                assertpy.assert_that(self.actual_result).is_equal_to_ignoring_case(self.expected_result)
+                assertpy.assert_that(str(self.actual_result)).is_equal_to_ignoring_case(self.expected_result)
             elif self.comparator in ["notEqual", "does not equal", "不等于"]:  # 不等于
                 assFailMsg = '实际值({}) 不等于 预期值({})，条件为否：'.format(self.actual_result, self.expected_result)
                 assertpy.assert_that(self.actual_result).is_not_equal_to(self.expected_result)

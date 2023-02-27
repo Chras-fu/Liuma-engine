@@ -2,6 +2,7 @@
 import os
 import copy
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests import Session
 import zipfile
 from lm.lm_run import LMRun
@@ -52,12 +53,8 @@ class LMSetting(object):
             for collection_map in self.task["testCollectionList"]:
                 collection = collection_map["collectionId"]
                 test_case_list = collection_map["testCaseList"]
-                driver = {
-                    "browser_opt": self.config.browser_opt,
-                    "browser_path": self.config.browser_path,
-                    "driver": None
-                }
-                session = Session()
+                session = LMSession()
+                driver = LMDriver()
                 context = dict()
                 for case in test_case_list:
                     test_case = {
@@ -76,12 +73,8 @@ class LMSetting(object):
         else:
             collection_map = self.task["testCollectionList"][0]
             collection = collection_map["collectionId"]
-            driver = {
-                "browser_opt": self.config.browser_opt,
-                "browser_path": self.config.browser_path,
-                "driver": None
-            }
-            session = Session()
+            session = LMSession()
+            driver = LMDriver()
             context = dict()
             test_case = {
                 "driver": driver,
@@ -101,6 +94,7 @@ class LMSetting(object):
         if self.task["reRun"]:
             runTime = 2
         task_id = self.task["taskId"]
+        max_thread = self.task["maxThread"]
         queue.put("run_all_start--%s" % task_id)
         for index in range(runTime):
             if index == 0:
@@ -111,16 +105,12 @@ class LMSetting(object):
             if len(test_plan) > 0:
                 queue.put("start_run_index--%s" % index)
                 default_lock = threading.RLock()
-                threads = []
-                for collection, test_case_list in test_plan.items():
-                    if len(test_case_list) != 0:
-                        s_thread = threading.Thread(target=LMRun(test_case_list, index + 1, default_result,
-                                                                 default_lock, queue).run_test)
-                        threads.append(s_thread)
-                for t in threads:
-                    t.start()
-                for t in threads:
-                    t.join()
+                # 进行线程池管理执行 设置最大并发
+                with ThreadPoolExecutor(max_workers=max_thread) as t:
+                    executors = [t.submit(LMRun(test_case_list, index + 1, default_result, default_lock,
+                                                queue).run_test, ) for test_case_list in test_plan.values()]
+                    as_completed(executors)
+
         queue.put("run_all_stop--%s" % task_id)
         current_exec_status.value = 1
 
@@ -144,4 +134,19 @@ class LMSetting(object):
                 if len(test_plan[collection]) == 0:
                     del test_plan[collection]
         return test_plan
+
+    
+class LMSession(object):
+    """API测试专用"""
+    def __init__(self):
+        self.session = Session()
+
+
+class LMDriver(object):
+    """WEB测试专用"""
+    def __init__(self):
+        self.driver = None
+        self.config = LMConfig()
+        self.browser_opt = self.config.browser_opt
+        self.browser_path = self.config.browser_path
 

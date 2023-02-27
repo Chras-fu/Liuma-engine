@@ -11,7 +11,7 @@ class Api(object):
 
     def __init__(self):
         config = LMConfig()
-        self.url = config.url
+        self.url = config.url[:-1] if config.url.endswith("/") else config.url
         self.engine = config.engine
         self.secret = config.secret
         self.proxy = None
@@ -213,7 +213,7 @@ class LMApi(Api):
 
     def download_test_file(self, uuid):
         """下载测试文件"""
-        url = self.url + "/openapi/test/file/download/" + uuid
+        url = self.url + "/openapi/download/test/file/" + uuid
         for index in range(2):
             try:
                 if index > 0:

@@ -36,7 +36,7 @@ class ApiTestStep:
 
     def execute(self):
         try:
-            self.test.debugLog('[{}][{}]接口执行开始'.format(self.collector.apiId, self.collector.apiName))
+            self.test.debugLog('[{}]接口执行开始'.format(self.collector.apiName))
             request_log = '【请求信息】:<br>'
             request_log += '{} {}<br>'.format(self.collector.method, url_join(self.collector.url, self.collector.path))
             for key, value in self.collector.others.items():
@@ -62,13 +62,14 @@ class ApiTestStep:
                 self.test.debugLog("请求前等待%sS" % int(self.collector.controller["sleepBeforeRun"]))
             start_time = datetime.datetime.now()
             if self.collector.controller["useSession"].lower() == 'true' and self.collector.controller["saveSession"].lower() == "true":
-                res = self.session.request(self.collector.method, url, **self.collector.others)
+                res = self.session.session.request(self.collector.method, url, **self.collector.others)
             elif self.collector.controller["useSession"].lower() == "true":
-                session = deepcopy(self.session)
+                session = deepcopy(self.session.session)
                 res = session.request(self.collector.method, url, **self.collector.others)
             elif self.collector.controller["saveSession"].lower() == "true":
                 session = Session()
                 res = session.request(self.collector.method, url, **self.collector.others)
+                self.session.session = session
             else:
                 res = request(self.collector.method, url, **self.collector.others)
             end_time = datetime.datetime.now()
@@ -88,7 +89,7 @@ class ApiTestStep:
             # 关联参数
             self.extract_depend_params()
         finally:
-            self.test.debugLog('[{}][{}]接口执行结束'.format(self.collector.apiId, self.collector.apiName))
+            self.test.debugLog('[{}]接口执行结束'.format(self.collector.apiName))
             if int(self.collector.controller["sleepAfterRun"]) > 0:
                 sleep(int(self.collector.controller["sleepAfterRun"]))
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
@@ -105,14 +106,14 @@ class ApiTestStep:
                 result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
                 if not result:
                     break
-                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                _api_list = api_list[index: (index + _looper["num"])]
                 case._loop_execute(_api_list, api_list[index]["apiId"])
         else:
             # 渲染循环控制控制器 for只需渲染一次
             _looper = case._render_looper(self.collector.looper)
             for i in range(_looper["times"]):  # 本次循环次数
                 self.context[_looper["indexName"]] = i + 1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
-                _api_list = api_list[index - 1: (index + _looper["num"] - 1)]
+                _api_list = api_list[index: (index + _looper["num"])]
                 case._loop_execute(_api_list, api_list[index]["apiId"])
 
     def condition_controller(self, case):
@@ -230,6 +231,12 @@ class ApiTestStep:
                 break
         if pop_key is not None:
             self.collector.others['headers'].pop(pop_key)
+
+    def handle_headers(self):
+        if self.collector.others["headers"] is None:
+            return
+        for key, value in self.collector.others["headers"].items():
+            self.collector.others["headers"][key] = str(value)
 
 
 def dict2str(data):

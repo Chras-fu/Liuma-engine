@@ -1,7 +1,7 @@
 from selenium.common.exceptions import NoSuchElementException
 
 from core.assertion import LMAssert
-from core.web.driver.operation import Operation
+from core.web.driver import Operation
 
 
 class Assertion(Operation):

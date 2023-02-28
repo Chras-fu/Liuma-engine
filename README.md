@@ -13,15 +13,14 @@
 
 如果本项目对您有帮助，请给我们一个Star，您的支持是我们前进的动力。
 
-
 ## 二、功能介绍
 
-![system](https://user-images.githubusercontent.com/96771570/182859649-bf10af76-16ce-4961-bab6-a8ec36111daa.png)
+![system](https://user-images.githubusercontent.com/96771570/221833391-9d35308a-3f90-47c7-9e9d-e62fc1201f18.png)
 
 1. API测试
 ```
 (1) 支持单接口测试和链路测试。
-(2) 支持接口统一管理，支持swagger导入。
+(2) 支持接口统一管理，支持postman/swagger导入。
 (3) 支持一键生成字段校验的接口健壮性用例。
 (4) 支持全局变量、关联、断言、内置函数、自定义函数。
 (5) 支持前后置脚本、失败继续、超时时间、等待/条件/循环等逻辑控制器。
@@ -37,7 +36,7 @@
 (5) 支持与API用例在同一用例集合顺序执行。
 ```
 
-3. AppUI测试(1.1版本上线)
+3. AppUI测试
 ```
 (1) 支持WebUI同等用例编写和执行能力
 (2) 支持安卓和苹果系统
@@ -51,7 +50,7 @@
 
 ## 三、开发环境
 
-环境依赖: Python3.6+、Chrome、ChromeDriver(参考:[驱动说明](./browser/readme.md))
+环境依赖: Python3.8、Chrome、ChromeDriver(参考:[驱动说明](./browser/readme.md))
 
 IDE推荐: python使用pyCharm
 

@@ -1,7 +1,6 @@
 from typing import Optional
 from uiautomator2 import Device
 from wda import Client, AlertAction, WDAEmptyResponseError
-from wda import Client
 
 class AndroidDriver(Device):
     """安卓设备"""

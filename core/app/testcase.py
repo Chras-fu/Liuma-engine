@@ -51,7 +51,7 @@ class AppTestCase:
         except Exception as e:
             if not isinstance(e, AssertionError):
                 self.test.saveScreenShot(opt_content['operationTrans'] if opt_content is not None else opt_content,
-                                         self.device.screenshot())
+                                         self.device.screenshot(format='raw'))
             raise e
         finally:
             self._after_execute()

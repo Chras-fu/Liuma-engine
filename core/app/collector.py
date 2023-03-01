@@ -44,7 +44,7 @@ class WebOperationCollector:
         else:
             for name, element in opt_element.items():
                 props = {}
-                if element["by"].lower == "xpath":
+                if element["by"].lower() == "xpath":
                     props["xpath"] = element["expression"]
                 else:
                     for prop in json.loads(element["expression"]):

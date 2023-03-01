@@ -40,9 +40,9 @@ class Operation(object):
         """查找单个元素"""
         try:
             element = self.device.find_element(**ele)
-            self.test.debugLog("成功定位元素 'By: %s Expression: %s'" % ele)
+            self.test.debugLog("定位元素: %s" % str(ele))
             return element
         except Exception as e:
-            self.test.errorLog("无法定位元素 'By: %s Expression: %s'" % ele)
+            self.test.errorLog("定位元素出错: %s" % str(ele))
             raise e
 

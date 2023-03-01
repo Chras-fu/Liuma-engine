@@ -147,9 +147,9 @@ class View(Operation):
         """放大 安卓仅支持属性定位"""
         try:
             if system == "android":
-                self.find_element(element).pinch_in()
+                self.find_element(element).pinch_out()
             else:
-                self.find_element(element).pinch_out(2, 1)
+                self.find_element(element).pinch(2, 1)
             self.test.debugLog("成功放大")
         except Exception as e:
             self.test.errorLog("无法放大")
@@ -158,19 +158,21 @@ class View(Operation):
     def wait(self, element, second):
         """等待元素出现"""
         try:
-            self.find_element(element).wait(timeout=second)
-            self.test.debugLog("成功等待元素出现")
+            if self.find_element(element).wait(timeout=second):
+                self.test.debugLog("成功等待元素出现")
+            else:
+                raise Exception("元素未出现")
         except Exception as e:
-            self.test.errorLog("无法等待元素出现")
             raise e
 
     def wait_gone(self, element, second):
         """等待元素消失"""
         try:
-            self.find_element(element).wait_gone(timeout=second)
-            self.test.debugLog("成功等待元素出现")
+            if self.find_element(element).wait_gone(timeout=second):
+                self.test.debugLog("成功等待元素出现")
+            else:
+                raise Exception("元素仍存在")
         except Exception as e:
-            self.test.errorLog("无法等待元素出现")
             raise e
 
     def drag_to_ele(self, start_element, end_element):

@@ -30,7 +30,7 @@ class AppleDevice(Client):
         return client
 
     def find_element(self, **kwargs):
-        return self.__call__(self, **kwargs)
+        return BaseClient.__call__(self, **kwargs)
 
 
 def connect_device(system: str, url: str):

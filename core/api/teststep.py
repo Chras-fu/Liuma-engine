@@ -214,7 +214,7 @@ class ApiTestStep:
                     break
             final_result = all(results)
         else:
-            final_result, msg = LMAssert('相等', self.status_code, 200).compare()
+            final_result, msg = LMAssert('相等', self.status_code, str(200)).compare()
             check_messages.append(msg)
         self.assert_result = {
             'apiId': self.collector.apiId,

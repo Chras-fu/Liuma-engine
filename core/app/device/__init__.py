@@ -1,6 +1,7 @@
 from typing import Optional
 from uiautomator2 import Device
-from wda import Client, AlertAction, WDAEmptyResponseError
+from wda import Client, AlertAction, WDAEmptyResponseError, BaseClient
+
 
 class AndroidDriver(Device):
     """安卓设备"""
@@ -19,6 +20,9 @@ class AndroidDriver(Device):
 
 class AppleDevice(Client):
     """苹果设备"""
+    def __init__(self, url=None, _session_id=None):
+        self._wda_url = url
+        BaseClient.__init__(self, url, _session_id)
 
     def session(self,
                 bundle_id=None,
@@ -58,9 +62,7 @@ class AppleDevice(Client):
             res = self.session().app_state(bundle_id)
             if res.value != 4:
                 raise
-        client = AppleDevice(self.__wda_url, _session_id=res.sessionId)
-        client.__timeout = self.__timeout
-        client.__callbacks = self.__callbacks
+        client = AppleDevice(self._wda_url, _session_id=res.sessionId)
         return client
 
 

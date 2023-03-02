@@ -1,6 +1,6 @@
 from uiautomator2 import UiObjectNotFoundError
 from uiautomator2.xpath import XPath
-from wda import WDAElementNotFoundError
+from wda import WDAElementNotFoundError, WDAElementNotDisappearError
 from core.app.device import Operation
 
 
@@ -158,21 +158,25 @@ class View(Operation):
     def wait(self, element, second):
         """等待元素出现"""
         try:
-            if self.find_element(element).wait(timeout=second):
-                self.test.debugLog("成功等待元素出现")
-            else:
-                raise Exception("元素未出现")
+            self.find_element(element).wait(timeout=second, raise_error=True)
+            self.test.debugLog("成功等待元素出现")
+        except WDAElementNotFoundError as e:
+            self.test.errorLog("等待元素出现失败 元素不存在")
+            raise e
         except Exception as e:
+            self.test.errorLog("无法等待元素出现")
             raise e
 
     def wait_gone(self, element, second):
         """等待元素消失"""
         try:
-            if self.find_element(element).wait_gone(timeout=second):
-                self.test.debugLog("成功等待元素出现")
-            else:
-                raise Exception("元素仍存在")
+            self.find_element(element).wait_gone(timeout=second)
+            self.test.debugLog("成功等待元素消失")
+        except WDAElementNotDisappearError as e:
+            self.test.errorLog("等待元素消失失败 元素仍存在")
+            raise e
         except Exception as e:
+            self.test.errorLog("无法等待元素消失")
             raise e
 
     def drag_to_ele(self, start_element, end_element):

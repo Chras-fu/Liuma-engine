@@ -107,7 +107,7 @@ class System(Operation):
     def screenshot(self, name):
         """屏幕截图"""
         try:
-            screenshot = self.device.screenshot(format='pillow')
+            screenshot = self.device.screenshot(format='raw')
             self.test.saveScreenShot(name, screenshot)
             self.test.debugLog("成功执行屏幕截图")
         except Exception as e:

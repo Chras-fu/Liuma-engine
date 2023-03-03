@@ -1,5 +1,7 @@
 import datetime
 from time import sleep
+
+import simplejson.decoder
 from requests import request, Session
 from copy import deepcopy
 import json
@@ -158,7 +160,7 @@ class ApiTestStep:
         self.response_cookies = s[:-1]
         try:
             self.response_content = res.json()
-        except json.decoder.JSONDecodeError:
+        except Exception:
             self.response_content = res.text
 
     def extract_depend_params(self):

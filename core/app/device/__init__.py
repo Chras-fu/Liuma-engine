@@ -55,3 +55,11 @@ class Operation(object):
             self.test.errorLog("定位元素出错: %s" % str(ele))
             raise e
 
+
+class ElementNotFoundError(Exception):
+    """元素获取失败"""
+
+
+class ElementNotDisappearError(Exception):
+    """元素消失失败"""
+

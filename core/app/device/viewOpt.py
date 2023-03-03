@@ -1,7 +1,7 @@
 from uiautomator2 import UiObjectNotFoundError
 from uiautomator2.xpath import XPath
-from wda import WDAElementNotFoundError, WDAElementNotDisappearError
-from core.app.device import Operation
+from wda import WDAElementNotFoundError
+from core.app.device import Operation, ElementNotFoundError, ElementNotDisappearError
 
 
 class View(Operation):
@@ -158,22 +158,30 @@ class View(Operation):
     def wait(self, element, second):
         """等待元素出现"""
         try:
-            self.find_element(element).wait(timeout=second, raise_error=True)
-            self.test.debugLog("成功等待元素出现")
-        except WDAElementNotFoundError as e:
-            self.test.errorLog("等待元素出现失败 元素不存在")
+            if self.find_element(element).wait(timeout=second):
+                self.test.debugLog("成功等待元素出现")
+            else:
+                self.test.errorLog("等待元素出现失败 元素不存在")
+                raise ElementNotFoundError("element not exists")
+        except ElementNotFoundError as e:
             raise e
         except Exception as e:
             self.test.errorLog("无法等待元素出现")
             raise e
 
-    def wait_gone(self, element, second):
+    def wait_gone(self, system, element, second):
         """等待元素消失"""
         try:
-            self.find_element(element).wait_gone(timeout=second)
-            self.test.debugLog("成功等待元素消失")
-        except WDAElementNotDisappearError as e:
-            self.test.errorLog("等待元素消失失败 元素仍存在")
+            if system == "android":
+                res = self.find_element(element).wait_gone(timeout=second)
+            else:
+                res = self.find_element(element).wait_gone(timeout=second, raise_error=False)
+            if res:
+                self.test.debugLog("成功等待元素消失")
+            else:
+                self.test.errorLog("等待元素消失失败 元素仍存在")
+                raise ElementNotDisappearError("element exists")
+        except ElementNotDisappearError as e:
             raise e
         except Exception as e:
             self.test.errorLog("无法等待元素消失")

@@ -146,8 +146,8 @@ def find_view_opt(operate_name: str):
         View(test, device).wait(kwargs["element"]["element"], kwargs["data"]["second"])
 
     @keywords("等待元素消失")
-    def wait(test, device, **kwargs):
-        View(test, device).wait_gone(kwargs["element"]["element"], kwargs["data"]["second"])
+    def wait_gone(test, device, **kwargs):
+        View(test, device).wait_gone(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["second"])
 
     @keywords("拖动到元素")
     def drag_to_ele(test, device, **kwargs):

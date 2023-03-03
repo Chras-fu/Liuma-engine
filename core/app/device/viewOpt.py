@@ -32,9 +32,9 @@ class View(Operation):
         """长按"""
         try:
             if system == "android":
-                self.find_element(element).tap_hold(second)
-            else:
                 self.find_element(element).long_click(second)
+            else:
+                self.find_element(element).tap_hold(second)
             self.test.debugLog("成功长按%sS" % str(second))
         except Exception as e:
             self.test.errorLog("无法长按%sS" % str(second))
@@ -89,22 +89,27 @@ class View(Operation):
             self.test.errorLog("无法执行滑动")
             raise e
 
-    def input_text(self, system, element, text):
+    def input_text(self, element, text):
         """输入"""
         try:
-            if system == "android":
-                self.find_element(element).send_keys(text)
-            else:
-                self.find_element(element).set_text(text)
+            self.find_element(element).set_text(text)
             self.test.debugLog("成功输入%s" % str(text))
         except Exception as e:
             self.test.errorLog("无法输入%s" % str(text))
             raise e
 
-    def clear_text(self, element):
+    def clear_text(self, system, element):
         """清空"""
         try:
-            self.find_element(element).clear_text()
+            ele = self.find_element(element)
+            if system == "android" and len(element) == 1 and "xpath" in element:
+                xe = ele.get()
+                ele._d.set_fastinput_ime()
+                xe.click()
+                ele._parent._d.set_fastinput_ime()
+                ele._parent._d.clear_text()
+            else:
+                ele.clear_text()
             self.test.debugLog("成功清空")
         except Exception as e:
             self.test.errorLog("无法清空")

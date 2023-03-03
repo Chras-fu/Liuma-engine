@@ -123,11 +123,11 @@ def find_view_opt(operate_name: str):
 
     @keywords("输入")
     def input_text(test, device, **kwargs):
-        View(test, device).input_text(kwargs["system"], kwargs["element"]["element"], kwargs["data"]["text"])
+        View(test, device).input_text(kwargs["element"]["element"], kwargs["data"]["text"])
 
     @keywords("清空")
     def input_text(test, device, **kwargs):
-        View(test, device).clear_text(kwargs["element"]["element"])
+        View(test, device).clear_text(kwargs["system"], kwargs["element"]["element"])
 
     @keywords("滑动到元素出现")
     def scroll_to_ele(test, device, **kwargs):

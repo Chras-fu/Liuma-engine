@@ -1,3 +1,4 @@
+import os
 from functools import reduce
 from faker.providers import BaseProvider
 import time
@@ -7,6 +8,7 @@ import base64
 import datetime
 import json
 from dateutil.relativedelta import relativedelta
+from lm.lm_config import FILE_PATH
 
 
 class LiuMaProvider(BaseProvider):
@@ -43,6 +45,24 @@ class LiuMaProvider(BaseProvider):
             raise Exception("拉取测试文件失败")
         else:
             return res.content
+
+    def savefile(self, uuid):
+        try:
+            res = LMApi().download_test_file(uuid)
+        except:
+            raise Exception("拉取测试文件失败")
+        else:
+            file_name = res.headers.get("Content-Disposition").split("=")[1][1:-1]
+            dir_path = os.path.join(FILE_PATH, uuid)
+            file_path = os.path.join(dir_path, file_name)
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+                with open(file_path, 'wb+') as f:
+                    for chunk in res.iter_content(chunk_size=1024):
+                        if chunk:
+                            f.write(chunk)
+                f.close()
+            return file_path
 
     def b64encode_str(self, s: str):
         return base64.b64encode(s.encode('utf-8')).decode()

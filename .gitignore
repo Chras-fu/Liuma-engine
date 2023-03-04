@@ -8,5 +8,7 @@ log
 
 data
 
+file
+
 browser/**.exe
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import io
 import os
 import datetime
+import sys
 import time
 import unittest
 import traceback
@@ -63,6 +65,10 @@ class LMCase(unittest.TestCase):
 
     def defineTrans(self, id, name, content="", desc=None):
         """定义事务"""
+        if len(self.trans_list) > 0:
+            self.complete_output()
+            if self.trans_list[-1]["status"] == "":
+                self.trans_list[-1]["status"] = 0
         trans_dict = {
             "id": id,
             "name": name,
@@ -74,8 +80,14 @@ class LMCase(unittest.TestCase):
             "screenShotList": []
         }
         self.trans_list.append(trans_dict)
-        if len(self.trans_list) > 1 and self.trans_list[-2]["status"] == "":
-            self.trans_list[-2]["status"] = 0
+
+    def complete_output(self):
+        """获取控制台输出"""
+        output = sys.stdout.getvalue()
+        sys.stdout.truncate(0)
+        if output:
+            output = output.replace("\n", "<br>")
+            self.debugLog("控制台输出:<br> %s" % output)
 
     def deleteTrans(self, index):
         """删除事务"""
@@ -130,6 +142,7 @@ class LMCase(unittest.TestCase):
         """结果处理"""
         if len(self.trans_list) == 0:
             self.defineTrans(self.case_name.split("_")[1], "未知", "未知")
+        self.complete_output()
         isFail = False
         isError = False
         error_type = None

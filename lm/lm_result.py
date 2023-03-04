@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import datetime
+import io
 import sys
 import unittest
 
 
 class LMResult(unittest.TestResult):
 
-    def __init__(self, result, lock, queue, verbosity=1):
+    def __init__(self, result, lock, queue):
         unittest.TestResult.__init__(self)
-        self.verbosity = verbosity
+        self.stdout_buffer = None
+        self.original_stdout = sys.stdout
         self.default_result = result
         self.default_lock = lock
         self.queue = queue
@@ -16,9 +18,16 @@ class LMResult(unittest.TestResult):
 
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
+        self.setupStdout()
         test.start_time = datetime.datetime.now()
 
+    def setupStdout(self):
+        if self.stdout_buffer is None:
+            self.stdout_buffer = io.StringIO()
+        sys.stdout = self.stdout_buffer
+
     def stopTest(self, test):
+        unittest.TestResult.stopTest(self, test)
         test.stop_time = datetime.datetime.now()
         if self.default_lock.acquire():
             status, test_case, error = self.result[-1]
@@ -38,6 +47,11 @@ class LMResult(unittest.TestResult):
             self.default_result.append(case_info)
             self.queue.put(case_info)
             self.default_lock.release()
+
+    def restoreStdout(self):
+        sys.stdout = self.original_stdout
+        self.stdout_buffer.seek(0)
+        self.stdout_buffer.truncate()
 
     def addSuccess(self, test):
         unittest.TestResult.addSuccess(self, test)
@@ -59,17 +73,3 @@ class LMResult(unittest.TestResult):
 
     def mergeResult(self, n, test, e):
         self.result.append((n, test, e))
-
-    def printResult(self, n, test):
-        name = test.case_name
-        if self.verbosity > 1:
-            if n == 0:  sys.stderr.write('Pass  ' + name + ' '  + '\n')
-            if n == 1:  sys.stderr.write('Fail  ' + name + ' '  + '\n')
-            if n == 2:  sys.stderr.write('Error  ' + name + ' ' + '\n')
-            if n == 3:  sys.stderr.write('Skip  ' + name + ' '  + '\n')
-        else:
-            if n == 0:  sys.stderr.write('Pass')
-            if n == 1:  sys.stderr.write('Fail')
-            if n == 2:  sys.stderr.write('Error')
-            if n == 3:  sys.stderr.write('Skip')
-        sys.stderr.flush()

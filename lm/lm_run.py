@@ -6,13 +6,12 @@ from lm.lm_config import LMConfig
 
 
 class LMRun(object):
-    def __init__(self, plan_tuple, run_index, default_result, default_lock, queue, verbosity=2):
+    def __init__(self, plan_tuple, run_index, default_result, default_lock, queue):
         self.plan_tuple = plan_tuple
         self.run_index = run_index
         self.default_result = default_result
         self.default_lock = default_lock
         self.queue = queue
-        self.verbosity = verbosity
 
     def run_test(self):
         suite = unittest.TestSuite()
@@ -34,7 +33,7 @@ class LMRun(object):
             test_case.run_index = self.run_index
             suite.addTest(test_case)
 
-        result = lm_result.LMResult(self.default_result, self.default_lock, self.queue, verbosity=self.verbosity)
+        result = lm_result.LMResult(self.default_result, self.default_lock, self.queue)
 
         try:
             suite(result)

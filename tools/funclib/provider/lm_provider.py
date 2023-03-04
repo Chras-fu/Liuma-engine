@@ -12,11 +12,24 @@ from dateutil.relativedelta import relativedelta
 class LiuMaProvider(BaseProvider):
 
     @staticmethod
-    def lm_custom_func(code, params):
+    def lm_custom_func(code, params, temp=None):
         def func(self, *args):
             def sys_return(res):
                 names["_exec_result"] = res
+
+            def sys_get(name):
+                if name in names["_test_params"]:
+                    return names["_test_params"][name]
+                return names["_test_context"][name]
+
+            def sys_put(name, val, ps=False):
+                if ps:
+                    names["_test_params"][name] = val
+                names["_test_context"][name] = val
+
             names = locals()
+            names["_test_context"] = temp["context"]
+            names["_test_params"] = temp["params"]
             for index, value in enumerate(params):
                 names[value] = args[index]
             exec(code)

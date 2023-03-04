@@ -27,7 +27,7 @@ class Template:
         self.request_headers = None
         self.request_query = None
         self.request_body = None
-        self.func_lib = get_func_lib(functions)
+        self.func_lib = get_func_lib(functions, self.context, self.params)
         self.bytes_map = dict()
         self.parser = JsonPathParser()
 

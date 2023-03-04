@@ -7,12 +7,13 @@ from tools.funclib.params_enum import PARAMS_ENUM
 
 
 class CustomFaker(Faker):
-    def __init__(self, package='provider', lm_func=None, *args, **kwargs):
+    def __init__(self, package='provider', lm_func=None, temp=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if lm_func is None:
             lm_func = []
         self.package = package
         self.lm_func = lm_func
+        self.temp = temp
         self.func_param = PARAMS_ENUM
         self._load_module()
 
@@ -43,7 +44,7 @@ class CustomFaker(Faker):
 
     def _load_lm_func(self, provider):
         for custom in self.lm_func:
-            func = provider.lm_custom_func(custom["code"], custom["params"]["names"])
+            func = provider.lm_custom_func(custom["code"], custom["params"]["names"], self.temp)
             params = []
             for value in custom["params"]["types"]:
                 if value == "Int":

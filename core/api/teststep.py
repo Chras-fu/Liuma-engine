@@ -133,8 +133,11 @@ class ApiTestStep:
 
     def exec_script(self, code):
         """执行前后置脚本"""
-        def sys_put(name, val):
-            self.context[name] = val
+        def sys_put(name, val, ps=False):
+            if ps:  # 默认给关联参数赋值，只有多传入true时才会给公参赋值
+                self.params[name] = val
+            else:
+                self.context[name] = val
 
         def sys_get(name):
             if name in self.params:   # 优先从公参中取值

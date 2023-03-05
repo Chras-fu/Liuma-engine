@@ -1,7 +1,6 @@
 import datetime
 from time import sleep
 
-import simplejson.decoder
 from requests import request, Session
 from copy import deepcopy
 import json

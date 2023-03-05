@@ -42,6 +42,7 @@ PARAMS_ENUM = {
     "password": [int, bool, bool, bool, bool],
     "pyfloat": [int, int, bool],
     "loadfile": [str],
+    "savefile": [str],
     "b64encode_str": [str],
     "b64encode_bytes": [bytes],
     "b64encode_file": [str],

@@ -48,6 +48,8 @@ class ApiTestStep:
                             request_log += '{}: {}<br>'.format(c_key, ["文件长度%s: %s" % (k, len(v)) for k,v in value.items()])
                         if isinstance(value, list):
                             request_log += '{}: {}<br>'.format(c_key, [i[1][0] for i in value])
+                    elif c_key == '请求体':
+                        request_log += '<span>{}: {}</span><br>'.format(c_key, dict2str(value))
                     else:
                         request_log += '{}: {}<br>'.format(c_key, dict2str(value))
             self.test.debugLog(request_log[:-4])

@@ -204,35 +204,41 @@ def find_assertion_opt(operate_name: str):
 
     @keywords("断言元素存在")
     def assert_ele_exists(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_exists(kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_exists(kwargs["element"]["element"],
+                                                         kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言元素文本")
     def assert_ele_text(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_text(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_text(kwargs["system"], kwargs["element"]["element"],
+                                                       kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言元素属性")
     def assert_ele_attribute(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_attribute(kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_attribute(kwargs["element"]["element"], kwargs["data"]["attribute"],
+                                                            kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言元素位置")
     def assert_ele_center(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_center(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_center(kwargs["system"], kwargs["element"]["element"],
+                                                         kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言元素X坐标")
     def assert_ele_x(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_x(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_x(kwargs["system"], kwargs["element"]["element"],
+                                                    kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言元素Y坐标")
     def assert_ele_y(test, device, **kwargs):
-        return Assertion(test, device).assert_ele_y(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Assertion(test, device).assert_ele_y(kwargs["system"], kwargs["element"]["element"],
+                                                    kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言弹框存在")
     def assert_alert_exists(test, device, **kwargs):
-        return Assertion(test, device).assert_alert_exists(**kwargs["data"])
+        return Assertion(test, device).assert_alert_exists(kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("断言弹框文本")
     def assert_alert_text(test, device, **kwargs):
-        return Assertion(test, device).assert_alert_text(**kwargs["data"])
+        return Assertion(test, device).assert_alert_text(kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("自定义")
     def custom(test, device, **kwargs):
@@ -310,36 +316,41 @@ def find_condition_opt(operate_name: str):
 
     @keywords("判断元素存在")
     def condition_ele_exists(test, device, **kwargs):
-        return Condition(test, device).condition_ele_exists(kwargs["element"]["element"], **kwargs["data"])
+        return Condition(test, device).condition_ele_exists(kwargs["element"]["element"],
+                                                            kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断元素文本")
     def condition_ele_text(test, device, **kwargs):
-        return Condition(test, device).condition_ele_text(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Condition(test, device).condition_ele_text(kwargs["system"], kwargs["element"]["element"],
+                                                          kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断元素属性")
     def condition_ele_attribute(test, device, **kwargs):
-        return Condition(test, device).condition_ele_attribute(kwargs["element"]["element"], **kwargs["data"])
+        return Condition(test, device).condition_ele_attribute(kwargs["element"]["element"], kwargs["data"]["attribute"],
+                                                            kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断元素位置")
     def condition_ele_center(test, device, **kwargs):
         return Condition(test, device).condition_ele_center(kwargs["system"], kwargs["element"]["element"],
-                                                         **kwargs["data"])
+                                                            kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断元素X坐标")
     def condition_ele_x(test, device, **kwargs):
-        return Condition(test, device).condition_ele_x(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Condition(test, device).condition_ele_x(kwargs["system"], kwargs["element"]["element"],
+                                                       kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断元素Y坐标")
     def condition_ele_y(test, device, **kwargs):
-        return Condition(test, device).condition_ele_y(kwargs["system"], kwargs["element"]["element"], **kwargs["data"])
+        return Condition(test, device).condition_ele_y(kwargs["system"], kwargs["element"]["element"],
+                                                       kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断弹框存在")
     def condition_alert_exists(test, device, **kwargs):
-        return Condition(test, device).condition_alert_exists(**kwargs["data"])
+        return Condition(test, device).condition_alert_exists(kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("判断弹框文本")
     def condition_alert_text(test, device, **kwargs):
-        return Condition(test, device).condition_alert_text(**kwargs["data"])
+        return Condition(test, device).condition_alert_text(kwargs["data"]["assertion"], kwargs["data"]["expect"])
 
     @keywords("自定义")
     def custom(test, device, **kwargs):

@@ -74,10 +74,28 @@ class Template:
                     flag = False
                 tmp = tmp[::-1]
                 key = tmp[start_length:-end_length].strip()
-                if key in self.context:
-                    value = self.context.get(key)
-                elif key.startswith(self.param_prefix) and key[1:] in self.params:
-                    value = self.params.get(key[1:])
+                index = None
+                if key.endswith(']') and '[' in key:
+                    key = key.split("[")[0]
+                    try:
+                        index = int(key.split('[')[1][:-1])
+                    except:
+                        index = None
+                if key in self.params:
+                    if index is None:
+                        value = self.params.get(key)
+                    else:
+                        value = self.params.get(key)[index]
+                elif key in self.context:
+                    if index is None:
+                        value = self.context.get(key)
+                    else:
+                        value = self.context.get(key)[index]
+                elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
+                    if index is None:
+                        value = self.params.get(key[1:])
+                    else:
+                        value = self.params.get(key[:-1])[index]
                 elif key.startswith(self.function_prefix):
                     name_args = self.split_func(key, self.function_prefix)
                     name_args = [_ for _ in map(self.replace_param, name_args)]

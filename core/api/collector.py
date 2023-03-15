@@ -67,13 +67,16 @@ class ApiRequestCollector:
         if 'path' not in api_data or api_data['path'] is None or len(api_data['path']) == 0:
             raise UnDefinablePathError("接口{}未设置路径".format(api_data['apiId']))
         else:
-            fields = re.findall(r'#\{(.*?)\}', api_data['path'])
+            fields = re.findall(r'\{(.*?)\}', api_data['path'])
             path = api_data['path']
             for field in fields:
-                result = "#{%s}" % field
+                result = "{%s}" % field
                 if field in api_data['rest']:
                     result = api_data["rest"][field]  # 将path中的参数替换成rest
-                path = path.replace("#{%s}" % field, result)
+                if "#{%s}" % field in path: # 兼容老版本#{name}
+                    path = path.replace("#{%s}" % field, result)
+                else:
+                    path = path.replace("{%s}" % field, result)
             self.path = path
 
     def collect_controller(self, api_data):

@@ -60,16 +60,24 @@ class ApiTestCase:
             # 收集请求主体并执行
             step.collector.collect(api_data)
             try:
-                # 执行前置脚本
-                if step.collector.controller["preScript"] is not None:
-                    step.exec_script(step.collector.controller["preScript"])
+                # 执行前置脚本和sql
+                if step.collector.controller["pre"] is not None:
+                    for pre in step.collector.controller["pre"]:
+                        if pre['name'] == 'preScript':
+                            step.exec_script(pre["value"])
+                        else:
+                            step.exec_sql(pre["value"], self)
                 # 渲染主体
                 self._render_content(step)
                 # 执行step, 接口参数移除，接口请求，接口响应，断言操作，依赖参数提取
                 step.execute()
-                # 执行后置脚本
-                if step.collector.controller["postScript"] is not None:
-                    step.exec_script(step.collector.controller["postScript"])
+                # 执行后置脚本和sql
+                if step.collector.controller["post"] is not None:
+                    for post in step.collector.controller["post"]:
+                        if post['name'] == 'postScript':
+                            step.exec_script(post["value"])
+                        else:
+                            step.exec_sql(post["value"], self)
                 # 检查step的断言结果
                 if step.assert_result['result']:
                     self.test.debugLog('[{}]接口断言成功: {}'.format(step.collector.apiName,
@@ -101,6 +109,10 @@ class ApiTestCase:
 
     def _render_conditions(self, conditions):
         self.template.init(conditions)
+        return self.template.render()
+
+    def _render_sql(self, sql):
+        self.template.init(sql)
         return self.template.render()
 
     def _render_content(self, step):

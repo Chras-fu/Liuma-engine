@@ -6,6 +6,7 @@ from copy import deepcopy
 import json
 
 from core.assertion import LMAssert
+from tools.utils.sql import SQLConnect
 from tools.utils.utils import extract, ExtractValueError, url_join
 from urllib.parse import urlencode
 
@@ -152,6 +153,30 @@ class ApiTestStep:
         names["res_cookies"] = self.response_cookies
         names["res_bytes"] = self.response_content_bytes
         exec(code)
+
+    def exec_sql(self, sql, case):
+        """执行前后置sql"""
+        if sql == "{}":
+            return
+        sql = json.loads(case._render_sql(sql))
+        if "host" not in sql["db"]:
+            raise (KeyError, "获取数据库连接信息失败 请检查配置")
+        conn = SQLConnect(**sql["db"])
+        if sql["sqlType"] != "query":
+            conn.exec(sql["sqlText"])
+        else:
+            results = conn.query(sql["sqlText"])
+            names = sql["names"].split(",")  # name数量可以比结果数量段，但不能长，不能会indexError
+            values = {}
+            for r in results:
+                for i, v in enumerate(r):
+                    if i not in values.keys():
+                        values[i] = []
+                    values[i].append(v)
+            for j, n in enumerate(names):
+                if j not in values.keys():
+                    raise (IndexError, "变量个数错误 请检查变量个数配置是否与查询语句结果一致")
+                self.context[n] = values[j]  # 保存变量到变量空间
 
     def save_response(self, res):
         """保存响应结果"""

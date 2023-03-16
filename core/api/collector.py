@@ -88,10 +88,10 @@ class ApiRequestCollector:
             api_data["controller"]["useSession"] = "false"  # 默认不使用session
         if "saveSession" not in api_data["controller"]:
             api_data["controller"]["saveSession"] = "false"  # 默认不保存session
-        if "preScript" not in api_data["controller"]:
-            api_data["controller"]["preScript"] = None  # 默认没有前置脚本
-        if "postScript" not in api_data["controller"]:
-            api_data["controller"]["postScript"] = None  # 默认没有后置脚本
+        if "pre" not in api_data["controller"]:
+            api_data["controller"]["pre"] = None  # 默认没有前置脚本和sql
+        if "post" not in api_data["controller"]:
+            api_data["controller"]["post"] = None  # 默认没有后置脚本和sql
         if "errorContinue" not in api_data["controller"]:
             api_data["controller"]["errorContinue"] = "false"  # 默认错误后不再执行
         self.controller = api_data["controller"]

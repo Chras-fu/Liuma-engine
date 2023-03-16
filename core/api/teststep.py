@@ -160,7 +160,7 @@ class ApiTestStep:
             return
         sql = json.loads(case._render_sql(sql))
         if "host" not in sql["db"]:
-            raise (KeyError, "获取数据库连接信息失败 请检查配置")
+            raise KeyError("获取数据库连接信息失败 请检查配置")
         conn = SQLConnect(**sql["db"])
         if sql["sqlType"] != "query":
             conn.exec(sql["sqlText"])
@@ -174,8 +174,11 @@ class ApiTestStep:
                         values[i] = []
                     values[i].append(v)
             for j, n in enumerate(names):
+                if len(values) == 0:
+                    self.context[n] = []    # 如果查询结果为空 则变量保存为空数组
+                    continue
                 if j not in values.keys():
-                    raise (IndexError, "变量个数错误 请检查变量个数配置是否与查询语句结果一致")
+                    raise IndexError("变量数错误, 请检查变量数配置是否与查询语句一致，当前查询结果: <br>{}".format(results))
                 self.context[n] = values[j]  # 保存变量到变量空间
 
     def save_response(self, res):

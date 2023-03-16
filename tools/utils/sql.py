@@ -9,7 +9,7 @@ class SQLConnect:
     def __init__(self, tpz, host, port, db, user, password):
         self.tpz = tpz
         self.host = host
-        self.port = port
+        self.port = int(port)
         self.db = db
         self.user = user
         self.pwd = password
@@ -29,10 +29,10 @@ class SQLConnect:
         elif self.tpz == "oracle":
             self.conn = oracle.connect(self.user, self.pwd, f"{self.host}:{self.port}/{self.db}")
         else:
-            raise (TypeError, "不支持的数据库类型")
+            raise TypeError("不支持的数据库类型")
         cur = self.conn.cursor()
         if not cur:
-            raise (RuntimeError, "连接数据库失败")
+            raise RuntimeError("连接数据库失败")
         else:
             return cur
 

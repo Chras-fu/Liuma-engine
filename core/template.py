@@ -76,9 +76,10 @@ class Template:
                 key = tmp[start_length:-end_length].strip()
                 index = None
                 if key.endswith(']') and '[' in key:
-                    key = key.split("[")[0]
+                    keys = key.split("[")
+                    key = keys[0]
                     try:
-                        index = int(key.split('[')[1][:-1])
+                        index = int(keys[-1][:-1])
                     except:
                         index = None
                 if key in self.params:

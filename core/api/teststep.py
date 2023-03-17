@@ -98,7 +98,7 @@ class ApiTestStep:
                 sleep(int(self.collector.controller["sleepAfterRun"]))
                 self.test.debugLog("请求后等待%sS" % int(self.collector.controller["sleepAfterRun"]))
 
-    def looper_controller(self, case, api_list, index):
+    def looper_controller(self, case, api_list, step_n):
         """循环控制器"""
         if "type" in self.collector.looper and self.collector.looper["type"] == "WHILE":
             # while循环 且兼容之前只有for循环
@@ -106,23 +106,23 @@ class ApiTestStep:
             while self.collector.looper["timeout"] == 0 or (datetime.datetime.now() - loop_start_time).seconds * 1000 \
                     < self.collector.looper["timeout"]:     # timeout为0时可能会死循环 慎重选择
                 # 渲染循环控制控制器 每次循环都需要渲染
-                _looper = case._render_looper(self.collector.looper)
+                _looper = case.render_looper(self.collector.looper)
                 result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
                 if not result:
                     break
-                _api_list = api_list[index: (index + _looper["num"])]
-                case._loop_execute(_api_list, api_list[index]["apiId"])
+                _api_list = api_list[step_n: (step_n + _looper["num"])]
+                case.loop_execute(_api_list, api_list[step_n]["apiId"])
         else:
             # 渲染循环控制控制器 for只需渲染一次
-            _looper = case._render_looper(self.collector.looper)
-            for i in range(_looper["times"]):  # 本次循环次数
-                self.context[_looper["indexName"]] = i + 1  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
-                _api_list = api_list[index: (index + _looper["num"])]
-                case._loop_execute(_api_list, api_list[index]["apiId"])
+            _looper = case.render_looper(self.collector.looper)
+            for index in range(_looper["times"]):  # 本次循环次数
+                self.context[_looper["indexName"]] = index  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                _api_list = api_list[step_n: (step_n + _looper["num"])]
+                case.loop_execute(_api_list, api_list[step_n]["apiId"])
 
     def condition_controller(self, case):
         """条件控制器"""
-        _conditions = case._render_conditions(self.collector.conditions)
+        _conditions = case.render_conditions(self.collector.conditions)
         for condition in _conditions:
             try:
                 result, msg = LMAssert(condition['assertion'], condition['target'], condition['expect']).compare()
@@ -158,7 +158,7 @@ class ApiTestStep:
         """执行前后置sql"""
         if sql == "{}":
             return
-        sql = json.loads(case._render_sql(sql))
+        sql = json.loads(case.render_sql(sql))
         if "host" not in sql["db"]:
             raise KeyError("获取数据库连接信息失败 请检查配置")
         conn = SQLConnect(**sql["db"])

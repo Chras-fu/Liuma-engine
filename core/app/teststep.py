@@ -47,9 +47,12 @@ class AppTestStep:
         if self.collector.opt_trans == "While循环":
             loop_start_time = datetime.datetime.now()
             timeout = int(self.collector.opt_data["timeout"]["value"])
+            index = 0
             while timeout == 0 or (datetime.datetime.now() - loop_start_time).seconds * 1000 < timeout:
                 # timeout为0时可能会死循环 慎重选择
-                _looper = case.render_looper(self.collector.opt_data) # 渲染循环控制控制器 每次循环都需要渲染
+                _looper = case.render_looper(self.collector.opt_data)  # 渲染循环控制控制器 每次循环都需要渲染
+                self.context[_looper["indexName"]] = index  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                index += 1
                 result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
                 if not result:
                     return _looper["num"]

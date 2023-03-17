@@ -35,7 +35,7 @@ class Assertion(Operation):
         """断言页面源码"""
         try:
             actual = self.driver.page_source
-            self.test.debugLog("成功获取page source:%s" % str(actual))
+            self.test.debugLog("成功获取page source: 源码过长不予展示")
         except Exception as e:
             self.test.errorLog("无法获取page source")
             raise e

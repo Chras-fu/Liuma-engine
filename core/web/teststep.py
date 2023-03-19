@@ -1,5 +1,5 @@
-import datetime
 import sys
+from datetime import datetime
 from core.assertion import LMAssert
 from core.web.find_opt import *
 
@@ -44,25 +44,29 @@ class WebTestStep:
     def looper_controller(self, case, opt_list, step_n):
         """循环控制器"""
         if self.collector.opt_trans == "While循环":
-            loop_start_time = datetime.datetime.now()
+            loop_start_time = datetime.now()
             timeout = int(self.collector.opt_data["timeout"]["value"])
+            index_name = self.collector.opt_data["indexName"]["value"]
+            steps = int(self.collector.opt_data["steps"]["value"])
             index = 0
-            while timeout == 0 or (datetime.datetime.now() - loop_start_time).seconds * 1000 < timeout:
+            while timeout == 0 or (datetime.now() - loop_start_time).seconds * 1000 < timeout:
                 # timeout为0时可能会死循环 慎重选择
-                _looper = case.render_looper(self.collector.opt_data) # 渲染循环控制控制器 每次循环都需要渲染
-                self.context[_looper["indexName"]] = index  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                self.context[index_name] = index  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
+                _looper = case.render_looper(self.collector.opt_data)  # 渲染循环控制控制器 每次循环都需要渲染
                 index += 1
                 result, _ = LMAssert(_looper['assertion'], _looper['target'], _looper['expect']).compare()
                 if not result:
-                    return _looper["num"]
-                _opt_list = opt_list[step_n+1: (step_n + _looper["num"])]   # 循环操作本身不参与循环 不然死循环
+                    break
+                _opt_list = opt_list[step_n+1: (step_n + _looper["steps"]+1)]   # 循环操作本身不参与循环 不然死循环
                 case.loop_execute(_opt_list, [])
+            return steps
         else:
-            _looper = case.render_looper(self.collector.looper) # 渲染循环控制控制器 for只需渲染一次
+            _looper = case.render_looper(self.collector.opt_data) # 渲染循环控制控制器 for只需渲染一次
             for index in range(_looper["times"]):  # 本次循环次数
                 self.context[_looper["indexName"]] = index  # 给循环索引赋值第几次循环 母循环和子循环的索引名不应一样
-                _opt_list = opt_list[step_n+1: (step_n + _looper["num"])]
+                _opt_list = opt_list[step_n+1: (step_n + _looper["steps"]+1)]
                 case.loop_execute(_opt_list, [])
+            return _looper["steps"]
 
     def assert_controller(self):
         if self.collector.opt_type == "assertion":

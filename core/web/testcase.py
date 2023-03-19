@@ -108,7 +108,7 @@ class WebTestCase:
         self.template.init(looper)
         _looper = self.template.render()
         for name, param in _looper.items():
-            if name != "target":    # 断言实际值不作数据处理
+            if name != "target" or name != "expect":    # 断言实际值不作数据处理
                 _looper[name] = handle_operation_data(param)
         if "times" in _looper:
             try:
@@ -122,17 +122,19 @@ class WebTestCase:
         if step.collector.opt_element is not None:
             for name, expressions in step.collector.opt_element.items():
                 expression = expressions[1]
-                if isinstance(expression, str) and self.comp.search(expression) is not None:
+                if self.comp.search(str(expression)) is not None:
                     self.template.init(expression)
                     render_value = self.template.render()
                     expressions = (expressions[0], str(render_value))
-                    step.collector.opt_element[name] = expressions
+                step.collector.opt_element[name] = expressions
         if step.collector.opt_data is not None:
+            data = {}
             for name, param in step.collector.opt_data.items():
                 param_value = param["value"]
                 if isinstance(param_value, str) and self.comp.search(param_value) is not None:
                     self.template.init(param_value)
                     render_value = self.template.render()
                     param["value"] = render_value
-                    step.collector.opt_data[name] = handle_operation_data(param)
+                data[name] = handle_operation_data(param)
+            step.collector.opt_data = data
 

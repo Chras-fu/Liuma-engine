@@ -84,19 +84,35 @@ class AppTestCase:
     def after_execute(self):
         self.device.app_stop(self.case_message['appId'])
 
+    def render_looper(self, looper):
+        self.template.init(looper)
+        _looper = self.template.render()
+        for name, param in _looper.items():
+            if name != "target" or name != "expect":    # 断言实际值不作数据处理
+                _looper[name] = handle_operation_data(param)
+        if "times" in _looper:
+            try:
+                times = int(_looper["times"])
+            except:
+                times = 1
+            _looper["times"] = times
+        return _looper
+
     def render_content(self, step):
         if step.collector.opt_element is not None:
             for name, expression in step.collector.opt_element.items():
-                if isinstance(expression, str) and self.comp.search(expression) is not None:
+                if self.comp.search(str(expression)) is not None:
                     self.template.init(expression)
-                    render_value = self.template.render()
-                    step.collector.opt_element[name] = render_value
+                    expression = self.template.render()
+                step.collector.opt_element[name] = expression
         if step.collector.opt_data is not None:
+            data = {}
             for name, param in step.collector.opt_data.items():
                 param_value = param["value"]
                 if isinstance(param_value, str) and self.comp.search(param_value) is not None:
                     self.template.init(param_value)
                     render_value = self.template.render()
                     param["value"] = render_value
-                    step.collector.opt_data[name] = handle_operation_data(param)
+                data[name] = handle_operation_data(param)
+            step.collector.opt_data = data
 

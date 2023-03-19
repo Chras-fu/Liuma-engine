@@ -42,6 +42,7 @@ class AppOperationCollector:
         if opt_element is None or len(opt_element) == 0:
             self.opt_element = None
         else:
+            elements = {}
             for name, element in opt_element.items():
                 props = {}
                 if element["by"].lower() == "prop":
@@ -49,8 +50,8 @@ class AppOperationCollector:
                         props[prop["propName"]] = prop["propValue"]
                 else:
                     props[element["by"].lower()] = element["expression"]
-                opt_element[name] = props
-            self.opt_element = opt_element
+                elements[name] = props
+            self.opt_element = elements
 
     def collect_opt_data(self, ui_data):
         opt_data = AppOperationCollector.__parse(ui_data, "operationData")

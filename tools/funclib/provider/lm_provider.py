@@ -20,14 +20,18 @@ class LiuMaProvider(BaseProvider):
                 names["_exec_result"] = res
 
             def sys_get(name):
-                if name in names["_test_params"]:
+                if name in names["_test_context"]:
+                    return names["_test_context"][name]
+                elif name in names["_test_params"]:
                     return names["_test_params"][name]
-                return names["_test_context"][name]
+                else:
+                    raise KeyError("不存在的公共参数或关联变量: {}".format(name))
 
             def sys_put(name, val, ps=False):
                 if ps:
                     names["_test_params"][name] = val
-                names["_test_context"][name] = val
+                else:
+                    names["_test_context"][name] = val
 
             names = locals()
             names["_test_context"] = temp["context"]

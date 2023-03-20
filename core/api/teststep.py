@@ -142,9 +142,12 @@ class ApiTestStep:
                 self.context[name] = val
 
         def sys_get(name):
-            if name in self.params:   # 优先从公参中取值
+            if name in self.context:   # 优先从公参中取值
+                return self.context[name]
+            elif name in self.params:
                 return self.params[name]
-            return self.context[name]
+            else:
+                raise KeyError("不存在的公共参数或关联变量: {}".format(name))
 
         names = locals()
         names["res_code"] = self.status_code

@@ -74,16 +74,35 @@ class Template:
                     flag = False
                 tmp = tmp[::-1]
                 key = tmp[start_length:-end_length].strip()
-                if key in self.context:
-                    value = self.context.get(key)
-                elif key.startswith(self.param_prefix) and key[1:] in self.params:
-                    value = self.params.get(key[1:])
+                index = None
+                if key.endswith(']') and '[' in key:
+                    keys = key.split("[")
+                    key = keys[0]
+                    try:
+                        index = int(keys[-1][:-1])
+                    except:
+                        index = None
+                if key in self.context: # 优先从关联参数中取
+                    if index is None:
+                        value = self.context.get(key)
+                    else:
+                        value = self.context.get(key)[index]
+                elif key in self.params:
+                    if index is None:
+                        value = self.params.get(key)
+                    else:
+                        value = self.params.get(key)[index]
+                elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
+                    if index is None:
+                        value = self.params.get(key[1:])
+                    else:
+                        value = self.params.get(key[:-1])[index]
                 elif key.startswith(self.function_prefix):
                     name_args = self.split_func(key, self.function_prefix)
                     name_args = [_ for _ in map(self.replace_param, name_args)]
                     value = self.func_lib(name_args[0], *name_args[1:])
                 else:
-                    raise NotExistedVariableOrFunctionError('不存在的公共参数、关联变量或取值函数: {}'.format(key))
+                    raise KeyError('不存在的公共参数、关联变量或内置函数: {}'.format(key))
 
                 if not flag and type(value) is str:
                     final_value = value
@@ -220,10 +239,6 @@ class Template:
         if isinstance(r, str):
             r = json.loads(r)
         return end + 1, r
-
-
-class NotExistedVariableOrFunctionError(Exception):
-    """不存在的应用变量或者函数"""
 
 
 class SplitFunctionError(Exception):

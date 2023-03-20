@@ -273,6 +273,20 @@ class View(Operation):
         names["device"] = self.device
         names["test"] = self.test
         try:
+            def sys_get(name):
+                if name in names["test"].context:
+                    return names["test"].context[name]
+                elif name in names["test"].common_params:
+                    return names["test"].common_params[name]
+                else:
+                    raise KeyError("不存在的公共参数或关联变量: {}".format(name))
+
+            def sys_put(name, val, ps=False):
+                if ps:
+                    names["test"].common_params[name] = val
+                else:
+                    names["test"].context[name] = val
+
             exec(code)
             self.test.debugLog("成功执行 %s" % kwargs["trans"])
         except UiObjectNotFoundError as e:

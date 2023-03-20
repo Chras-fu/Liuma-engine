@@ -18,8 +18,8 @@ class WebTestCase:
         self.functions = self.case_message['functions']
         self.params = handle_params_data(self.case_message['params'])
         test.common_params = self.params
-        self.driver = self.before_execute()
         self.template = Template(self.context, self.functions, self.params)
+        self.driver = self.before_execute()
         self.comp = re.compile(r"\{\{.*?\}\}")
 
     def execute(self):
@@ -72,24 +72,44 @@ class WebTestCase:
         return content
 
     def before_execute(self):
-        if self.test.driver.browser_opt == "headless":
-            opt = webdriver.ChromeOptions()
-            opt.add_argument("--headless")
-            opt.add_argument("--no-sandbox")
-        elif self.test.driver.browser_opt == "remote":
-            caps = {
-                'browserName': 'chrome'
-            }
-        else:
-            opt = webdriver.ChromeOptions()
-            opt.add_experimental_option('excludeSwitches', ['enable-logging'])
         old_driver = self.test.driver.driver
         if self.case_message["startDriver"]:
+            # 读取配置
+            opt = webdriver.ChromeOptions()
+            driver_setting = self.render_driver(self.case_message["driverSetting"])
+            if "arguments" in driver_setting.keys():
+                for item in driver_setting["arguments"]:
+                    if item["value"] != "":
+                        opt.add_argument(item["value"])
+            if "experimentals" in driver_setting.keys():
+                for item in driver_setting["experimentals"]:
+                    if item["name"] != "" and item["value"] != "":
+                        opt.add_experimental_option(item["name"], handle_operation_data(item))
+            if "extensions" in driver_setting.keys():
+                for item in driver_setting["extensions"]:
+                    if item["value"] != "":
+                        opt.add_encoded_extension(item["value"])
+            if "files" in driver_setting.keys():
+                for item in driver_setting["files"]:
+                    if item["value"] != "":
+                        opt.add_extension(item["value"])
+            if "binary" in driver_setting.keys() and driver_setting["binary"] != "":
+                opt.binary_location = driver_setting["binary"]
+            if self.test.driver.browser_opt == "headless":
+                opt.add_argument("--headless")
+                opt.add_argument("--no-sandbox")
+            elif self.test.driver.browser_opt == "remote":
+                caps = {
+                    'browserName': 'chrome'
+                }
+            else:
+                opt.add_experimental_option('excludeSwitches', ['enable-logging'])
             if old_driver is not None:
                 old_driver.quit()
             self.test.driver.driver = None
             if self.test.driver.browser_opt == "remote":
-                return webdriver.Remote(command_executor=self.test.driver.browser_path, desired_capabilities=caps)
+                return webdriver.Remote(command_executor=self.test.driver.browser_path,
+                                        desired_capabilities=caps, options=opt)
             else:
                 return webdriver.Chrome(executable_path=self.test.driver.browser_path, options=opt)
         else:
@@ -104,6 +124,10 @@ class WebTestCase:
             self.test.driver.driver = None
         else:
             self.test.driver.driver = self.driver
+
+    def render_driver(self, driver_setting):
+        self.template.init(driver_setting)
+        return self.template.render()
 
     def render_looper(self, looper):
         self.template.init(looper)

@@ -17,6 +17,7 @@ class WebTestCase:
         setattr(test, 'test_case_desc', self.case_message['comment'])
         self.functions = self.case_message['functions']
         self.params = handle_params_data(self.case_message['params'])
+        test.common_params = self.params
         self.driver = self.before_execute()
         self.template = Template(self.context, self.functions, self.params)
         self.comp = re.compile(r"\{\{.*?\}\}")

@@ -16,6 +16,7 @@ class CustomFaker(Faker):
         self.temp = temp
         self.func_param = PARAMS_ENUM
         self._load_module()
+        self._load_lm_func()
 
     def __call__(self, name, *args, **kwargs):
         return getattr(self, name)(*args, **kwargs)
@@ -38,13 +39,11 @@ class CustomFaker(Faker):
                 reload(module)
             for value in module.__dict__.values():
                 if type(value) is type and BaseProvider in value.__bases__:
-                    if value.__name__ == "LiuMaProvider":
-                        self._load_lm_func(value)
                     self.add_provider(value)
 
-    def _load_lm_func(self, provider):
+    def _load_lm_func(self):
         for custom in self.lm_func:
-            func = provider.lm_custom_func(custom["code"], custom["params"]["names"], self.temp)
+            func = self._lm_custom_func(custom["code"], custom["params"]["names"], self.temp)
             params = []
             for value in custom["params"]["types"]:
                 if value == "Int":
@@ -64,4 +63,33 @@ class CustomFaker(Faker):
                 else:
                     params.append(str)
             self.func_param[custom["name"]] = params
-            setattr(provider, custom["name"], func)
+            setattr(self, custom["name"], func)
+
+    @staticmethod
+    def _lm_custom_func(code, params, temp):
+        def func(*args):
+            def sys_return(res):
+                names["_exec_result"] = res
+
+            def sys_get(name):
+                if name in names["_test_context"]:
+                    return names["_test_context"][name]
+                elif name in names["_test_params"]:
+                    return names["_test_params"][name]
+                else:
+                    raise KeyError("不存在的公共参数或关联变量: {}".format(name))
+
+            def sys_put(name, val, ps=False):
+                if ps:
+                    names["_test_params"][name] = val
+                else:
+                    names["_test_context"][name] = val
+
+            names = locals()
+            names["_test_context"] = temp["context"]
+            names["_test_params"] = temp["params"]
+            for index, value in enumerate(params):
+                names[value] = args[index]
+            exec(code)
+            return names["_exec_result"]
+        return func

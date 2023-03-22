@@ -44,6 +44,7 @@ class Operation(object):
     def __init__(self, test, device):
         self.device = device
         self.test = test
+        self.print = print
 
     def find_element(self, ele):
         """查找单个元素"""

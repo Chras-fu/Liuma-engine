@@ -19,12 +19,12 @@ class LMResult(unittest.TestResult):
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
         self.setupStdout()
+        test.stdout_buffer = self.stdout_buffer
         test.start_time = datetime.datetime.now()
 
     def setupStdout(self):
         if self.stdout_buffer is None:
             self.stdout_buffer = io.StringIO()
-        sys.stdout = self.stdout_buffer
 
     def stopTest(self, test):
         unittest.TestResult.stopTest(self, test)
@@ -49,7 +49,6 @@ class LMResult(unittest.TestResult):
             self.default_lock.release()
 
     def restoreStdout(self):
-        sys.stdout = self.original_stdout
         self.stdout_buffer.seek(0)
         self.stdout_buffer.truncate()
 

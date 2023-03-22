@@ -1,3 +1,5 @@
+import sys
+
 from selenium.common.exceptions import NoSuchElementException
 from core.assertion import LMAssert
 from core.web.driver import Operation
@@ -346,6 +348,11 @@ class Condition(Operation):
         names["test"] = self.test
         try:
             """条件操作需要返回被断言的值 以sys_return(value)返回"""
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_return(res):
                 names["_exec_result"] = res
 

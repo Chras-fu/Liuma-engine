@@ -1,4 +1,5 @@
 import datetime
+import sys
 from time import sleep
 
 from requests import request, Session
@@ -35,6 +36,7 @@ class ApiTestStep:
         self.response_content_bytes = None
         self.response_cookies = None
         self.assert_result = None
+        self.print = print
 
     def execute(self):
         try:
@@ -135,6 +137,11 @@ class ApiTestStep:
 
     def exec_script(self, code):
         """执行前后置脚本"""
+        def print(*args, sep=' ', end='\n', file=None, flush=False):
+            if file is None or file in (sys.stdout, sys.stderr):
+                file = self.test.stdout_buffer
+            self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
         def sys_put(name, val, ps=False):
             if ps:  # 默认给关联参数赋值，只有多传入true时才会给公参赋值
                 self.params[name] = val

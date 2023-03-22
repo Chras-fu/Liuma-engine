@@ -1,3 +1,4 @@
+import sys
 from time import sleep
 
 from uiautomator2 import UiObjectNotFoundError
@@ -165,6 +166,11 @@ class System(Operation):
         names["device"] = self.device
         names["test"] = self.test
         try:
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_get(name):
                 if name in names["test"].context:
                     return names["test"].context[name]

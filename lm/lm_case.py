@@ -83,8 +83,9 @@ class LMCase(unittest.TestCase):
 
     def complete_output(self):
         """获取控制台输出"""
-        output = sys.stdout.getvalue()
-        sys.stdout.truncate(0)
+        stdout_buffer = getattr(self, "stdout_buffer", io.StringIO())
+        output = stdout_buffer.getvalue()
+        stdout_buffer.truncate(0)
         if output:
             output = output.replace("\n", "<br>")
             self.debugLog("控制台输出:<br> %s" % output)

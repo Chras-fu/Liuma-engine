@@ -1,3 +1,5 @@
+import sys
+
 from uiautomator2 import UiObjectNotFoundError
 from core.app.device import Operation
 
@@ -135,6 +137,11 @@ class Relation(Operation):
         names["test"] = self.test
         try:
             """关联操作需要返回被关联的值 以sys_return(value)返回"""
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_return(res):
                 names["_exec_result"] = res
 

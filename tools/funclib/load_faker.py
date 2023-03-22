@@ -7,11 +7,13 @@ from tools.funclib.params_enum import PARAMS_ENUM
 
 
 class CustomFaker(Faker):
-    def __init__(self, package='provider', lm_func=None, temp=None, *args, **kwargs):
+    def __init__(self, package='provider', test=None, lm_func=None, temp=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if lm_func is None:
             lm_func = []
         self.package = package
+        self.test = test
+        self.print = print
         self.lm_func = lm_func
         self.temp = temp
         self.func_param = PARAMS_ENUM
@@ -43,7 +45,7 @@ class CustomFaker(Faker):
 
     def _load_lm_func(self):
         for custom in self.lm_func:
-            func = self._lm_custom_func(custom["code"], custom["params"]["names"], self.temp)
+            func = self._lm_custom_func(custom["code"], custom["params"]["names"], self.test, self.temp)
             params = []
             for value in custom["params"]["types"]:
                 if value == "Int":
@@ -65,9 +67,13 @@ class CustomFaker(Faker):
             self.func_param[custom["name"]] = params
             setattr(self, custom["name"], func)
 
-    @staticmethod
-    def _lm_custom_func(code, params, temp):
+    def _lm_custom_func(self, code, params, test, temp):
         def func(*args):
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["_test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_return(res):
                 names["_exec_result"] = res
 
@@ -88,6 +94,7 @@ class CustomFaker(Faker):
             names = locals()
             names["_test_context"] = temp["context"]
             names["_test_params"] = temp["params"]
+            names["_test"] = test
             for index, value in enumerate(params):
                 names[value] = args[index]
             exec(code)

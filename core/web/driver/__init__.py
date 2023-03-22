@@ -5,6 +5,7 @@ class Operation(object):
     def __init__(self, test, driver):
         self.driver = driver
         self.test = test
+        self.print = print
 
     def find_element(self, ele):
         """查找单个元素"""

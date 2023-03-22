@@ -1,3 +1,5 @@
+import sys
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -292,6 +294,11 @@ class Page(Operation):
         names["driver"] = self.driver
         names["test"] = self.test
         try:
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_get(name):
                 if name in names["test"].context:
                     return names["test"].context[name]

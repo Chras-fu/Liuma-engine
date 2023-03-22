@@ -12,7 +12,7 @@ from tools.utils.utils import extract_by_jsonpath, quotation_marks
 
 class Template:
 
-    def __init__(self, context, functions, params, variable_start_string='{{', variable_end_string='}}', function_prefix='@', param_prefix='$'):
+    def __init__(self, test, context, functions, params, variable_start_string='{{', variable_end_string='}}', function_prefix='@', param_prefix='$'):
         self.param_prefix = param_prefix
         self.data = None
         self.context = context  # 关联参数
@@ -27,7 +27,7 @@ class Template:
         self.request_headers = None
         self.request_query = None
         self.request_body = None
-        self.func_lib = get_func_lib(functions, self.context, self.params)
+        self.func_lib = get_func_lib(test, functions, self.context, self.params)
         self.bytes_map = dict()
         self.parser = JsonPathParser()
 

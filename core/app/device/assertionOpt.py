@@ -1,3 +1,4 @@
+import sys
 from uiautomator2 import UiObjectNotFoundError
 from core.assertion import LMAssert
 from core.app.device import Operation
@@ -130,6 +131,11 @@ class Assertion(Operation):
         names["test"] = self.test
         try:
             """断言操作需要返回被断言的值 以sys_return(value)返回"""
+            def print(*args, sep=' ', end='\n', file=None, flush=False):
+                if file is None or file in (sys.stdout, sys.stderr):
+                    file = names["test"].stdout_buffer
+                self.print(*args, sep=sep, end=end, file=file, flush=flush)
+
             def sys_return(res):
                 names["_exec_result"] = res
 

@@ -30,23 +30,23 @@ class ApiTestCase:
         """用例执行入口函数"""
         if self.case_message['apiList'] is None:
             raise RuntimeError("无法获取API相关数据, 请重试!!!")
-        self._loop_execute(self.case_message['apiList'], "root")
+        self.loop_execute(self.case_message['apiList'], "root")
 
-    def _loop_execute(self, api_list, loop_id, index=0):
+    def loop_execute(self, api_list, loop_id, step_n=0):
         """循环执行"""
-        while index < len(api_list):
-            api_data = api_list[index]
+        while step_n < len(api_list):
+            api_data = api_list[step_n]
             # 定义收集器
             collector = ApiRequestCollector()
             step = ApiTestStep(self.test, self.session, collector, self.context, self.params)
             # 循环控制器
             step.collector.collect_looper(api_data)
-            if len(step.collector.looper) > 0 and not (loop_id != "root" and index == 0):
+            if len(step.collector.looper) > 0 and not (loop_id != "root" and step_n == 0):
                 # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
-                step.looper_controller(self, api_list, index)
-                index = index + step.collector.looper["num"] - 1  # 跳过本次循环中执行的接口
+                step.looper_controller(self, api_list, step_n)
+                step_n = step_n + step.collector.looper["num"] - 1  # 跳过本次循环中执行的接口
                 continue  # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
-            index += 1
+            step_n += 1
             # 定义事务
             self.test.defineTrans(api_data['apiId'], api_data['apiName'], api_data['path'], api_data['apiDesc'])
             # 条件控制器
@@ -60,16 +60,24 @@ class ApiTestCase:
             # 收集请求主体并执行
             step.collector.collect(api_data)
             try:
-                # 执行前置脚本
-                if step.collector.controller["preScript"] is not None:
-                    step.exec_script(step.collector.controller["preScript"])
+                # 执行前置脚本和sql
+                if step.collector.controller["pre"] is not None:
+                    for pre in step.collector.controller["pre"]:
+                        if pre['name'] == 'preScript':
+                            step.exec_script(pre["value"])
+                        else:
+                            step.exec_sql(pre["value"], self)
                 # 渲染主体
-                self._render_content(step)
+                self.render_content(step)
                 # 执行step, 接口参数移除，接口请求，接口响应，断言操作，依赖参数提取
                 step.execute()
-                # 执行后置脚本
-                if step.collector.controller["postScript"] is not None:
-                    step.exec_script(step.collector.controller["postScript"])
+                # 执行后置脚本和sql
+                if step.collector.controller["post"] is not None:
+                    for post in step.collector.controller["post"]:
+                        if post['name'] == 'postScript':
+                            step.exec_script(post["value"])
+                        else:
+                            step.exec_sql(post["value"], self)
                 # 检查step的断言结果
                 if step.assert_result['result']:
                     self.test.debugLog('[{}]接口断言成功: {}'.format(step.collector.apiName,
@@ -89,21 +97,26 @@ class ApiTestCase:
                 else:
                     raise e
 
-    def _render_looper(self, looper):
+    def render_looper(self, looper):
         self.template.init(looper)
         _looper = self.template.render()
-        try:
-            times = int(_looper["times"])
-        except:
-            times = 1
-        _looper["times"] = times
+        if "times" in _looper:
+            try:
+                times = int(_looper["times"])
+            except:
+                times = 1
+            _looper["times"] = times
         return _looper
 
-    def _render_conditions(self, conditions):
+    def render_conditions(self, conditions):
         self.template.init(conditions)
         return self.template.render()
 
-    def _render_content(self, step):
+    def render_sql(self, sql):
+        self.template.init(sql)
+        return self.template.render()
+
+    def render_content(self, step):
         self.template.init(step.collector.path)
         step.collector.path = self.template.render()
         if step.collector.others.get('params') is not None:

@@ -1,7 +1,7 @@
 from lm.lm_start import LMStart
 
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 
 if __name__ == '__main__':

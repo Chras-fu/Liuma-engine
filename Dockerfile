@@ -1,6 +1,6 @@
 FROM python:3.8
 
-MAINTAINER "panghu"
+MAINTAINER "liuma"
 
 COPY browser /liuma/browser
 

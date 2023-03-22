@@ -97,32 +97,29 @@ def get_case_message(data):
 
 
 def handle_operation_data(data):
-    result = {}
-    for key, item in data.items():
-        data_type = item["type"]
-        data_value = item["value"]
-        try:
-            if data_type == "JSONObject":
-                data_value = eval(data_value)
-            elif data_type == "JSONArray":
-                data_value = eval(data_value)
-            elif data_type == "Boolean":
-                if data_value.lower() == "true":
-                    data_value = True
-                else:
-                    data_value = False
-            elif data_type == "Int":
-                data_value = int(data_value)
-            elif data_type == "Float":
-                data_value = float(data_value)
-            elif data_type == "Number":
-                data_value = float(data_value) if "." in data_value else int(data_value)
+    data_type = data["type"]
+    data_value = data["value"]
+    try:
+        if data_type == "JSONObject":
+            data_value = eval(data_value)
+        elif data_type == "JSONArray":
+            data_value = eval(data_value)
+        elif data_type == "Boolean":
+            if data_value.lower() == "true":
+                data_value = True
             else:
-                data_value = data_value
-        except:
-            pass
-        result[key] = data_value
-    return result
+                data_value = False
+        elif data_type == "Int":
+            data_value = int(data_value)
+        elif data_type == "Float":
+            data_value = float(data_value)
+        elif data_type == "Number":
+            data_value = float(data_value) if "." in data_value else int(data_value)
+        else:
+            data_value = data_value
+    except:
+        pass
+    return data_value
 
 
 def handle_params_data(params):

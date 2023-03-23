@@ -119,6 +119,10 @@ class ApiTestCase:
     def render_content(self, step):
         self.template.init(step.collector.path)
         step.collector.path = self.template.render()
+        if step.collector.others.get('headers') is not None:
+            headers = step.collector.others.pop('headers')
+        else:
+            headers = None
         if step.collector.others.get('params') is not None:
             query = step.collector.others.pop('params')
         else:
@@ -134,8 +138,16 @@ class ApiTestCase:
             pop_key = None
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
-        step.handle_headers()   # 请求头处理为str
-        self.template.set_help_data(step.collector.path, step.collector.others.get('headers'), query, body)
+        self.template.set_help_data(step.collector.path, headers, query, body)
+        if headers is not None:
+            for expr, value in get_json_relation(headers, "headers"):
+                if isinstance(value, str) and self.comp.search(value) is not None:
+                    self.template.init(value)
+                    render_value = self.template.render()
+                    expression = self.json_path_parser.parse(expr)
+                    expression.update(headers, str(render_value))
+                    self.template.request_headers = headers
+            step.collector.others.setdefault("headers", self.template.request_headers)
         if query is not None:
             for expr, value in get_json_relation(query, "query"):
                 if isinstance(value, str) and self.comp.search(value) is not None:

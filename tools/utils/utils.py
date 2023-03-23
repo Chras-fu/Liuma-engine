@@ -236,6 +236,8 @@ def relate_sort(data, data_from):
     for (key, value) in sorted_list:
         if data_from == "query":
             sign = "#{_REQUEST_QUERY}"
+        elif data_from == "headers":
+            sign = "#{_REQUEST_HEADERS}"
         else:
             sign = "#{_REQUEST_BODY}"
         if sign in str(value):

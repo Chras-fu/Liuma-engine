@@ -176,10 +176,10 @@ class ApiTestCase:
                         self.template.request_query = data
                     else:
                         self.template.request_headers = data
-            if name == "body":
-                step.collector.others.setdefault(pop_key, self.template.request_body)
-            elif name == "query":
-                step.collector.others.setdefault("params", self.template.request_query)
-            else:
-                step.collector.others.setdefault("headers", self.template.request_headers)
+        if name == "body":
+            step.collector.others.setdefault(pop_key, self.template.request_body)
+        elif name == "query":
+            step.collector.others.setdefault("params", self.template.request_query)
+        else:
+            step.collector.others.setdefault("headers", self.template.request_headers)
 

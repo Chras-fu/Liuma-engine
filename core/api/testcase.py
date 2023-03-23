@@ -139,41 +139,47 @@ class ApiTestCase:
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
         self.template.set_help_data(step.collector.path, headers, query, body)
-        if headers is not None:
-            for expr, value in get_json_relation(headers, "headers"):
-                if isinstance(value, str) and self.comp.search(value) is not None:
-                    self.template.init(value)
-                    render_value = self.template.render()
-                    expression = self.json_path_parser.parse(expr)
-                    expression.update(headers, str(render_value))
-                    self.template.request_headers = headers
-            step.collector.others.setdefault("headers", self.template.request_headers)
-        if query is not None:
-            for expr, value in get_json_relation(query, "query"):
-                if isinstance(value, str) and self.comp.search(value) is not None:
-                    self.template.init(value)
-                    render_value = self.template.render()
-                    expression = self.json_path_parser.parse(expr)
-                    expression.update(query, render_value)
-                    self.template.request_query = query
-            step.collector.others.setdefault("params", self.template.request_query)
-        if body is not None:
-            if step.collector.body_type in ("json", "form-urlencoded", "form-data"):
-                for expr, value in get_json_relation(body, "body"):
-                    if isinstance(value, str) and self.comp.search(value) is not None:
-                        self.template.init(value)
-                        render_value = self.template.render()
-                        expression = self.json_path_parser.parse(expr)
-                        expression.update(body, render_value)
-                        self.template.request_body = body
-            else:
-                self.template.init(body)
-                render_value = self.template.render()
-                self.template.request_body = render_value
-            step.collector.others.setdefault(pop_key, self.template.request_body)
+        if "#{_REQUEST_QUERY}" in str(headers) or "#{_REQUEST_BODY}" in str(headers):
+            self.render_json(step, query, "query")
+            self.render_json(step, body, "body", pop_key)
+            self.render_json(step, headers, "headers")
+        else:
+            self.render_json(step, headers, "headers")
+            self.render_json(step, query, "query")
+            self.render_json(step, body, "body", pop_key)
         if step.collector.assertions is not None:
             self.template.init(step.collector.assertions)
             step.collector.assertions = self.template.render()
         if step.collector.relations is not None:
             self.template.init(step.collector.relations)
             step.collector.relations = self.template.render()
+
+    def render_json(self, step, data, name, pop_key=None):
+        if data is None:
+            return
+        if name == "body" and step.collector.body_type not in ("json", "form-urlencoded", "form-data"):
+            self.template.init(data)
+            render_value = self.template.render()
+            self.template.request_body = render_value
+        else:
+            for expr, value in get_json_relation(data, "body"):
+                if isinstance(value, str) and self.comp.search(value) is not None:
+                    self.template.init(value)
+                    render_value = self.template.render()
+                    if name == "headers":
+                        render_value = str(render_value)
+                    expression = self.json_path_parser.parse(expr)
+                    expression.update(data, render_value)
+                    if name == "body":
+                        self.template.request_body = data
+                    elif name == "query":
+                        self.template.request_query = data
+                    else:
+                        self.template.request_headers = data
+            if name == "body":
+                step.collector.others.setdefault(pop_key, self.template.request_body)
+            elif name == "query":
+                step.collector.others.setdefault("params", self.template.request_query)
+            else:
+                step.collector.others.setdefault("headers", self.template.request_headers)
+

@@ -268,6 +268,8 @@ class ApiTestStep:
         }
 
     def pop_content_type(self):
+        if self.collector.others['headers'] is None:
+            return
         pop_key = None
         for key, value in self.collector.others['headers'].items():
             if key.lower() == 'content-type':

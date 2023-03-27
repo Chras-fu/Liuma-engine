@@ -1,7 +1,7 @@
 import sys
 
 from uiautomator2 import UiObjectNotFoundError
-from core.web.driver import Operation
+from core.app.device import Operation
 
 
 class Scenario(Operation):
@@ -13,7 +13,7 @@ class Scenario(Operation):
         names = locals()
         names["element"] = kwargs["element"]
         names["data"] = kwargs["data"]
-        names["device"] = self.driver
+        names["device"] = self.device
         names["test"] = self.test
         try:
             def print(*args, sep=' ', end='\n', file=None, flush=False):

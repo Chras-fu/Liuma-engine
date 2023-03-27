@@ -75,8 +75,8 @@ class Relation(Operation):
                 x, y = self.find_element(element).center()
                 actual = (x, y)
             else:
-                size = self.find_element(element).bounds.center()
-                actual = (size.x, size.y)
+                x, y = self.find_element(element).bounds.center
+                actual = (x, y)
             self.test.debugLog("成功获取元素位置:%s" % str(actual))
         except Exception as e:
             self.test.errorLog("无法获取元素位置")
@@ -91,8 +91,8 @@ class Relation(Operation):
                 x, y = self.find_element(element).center()
                 actual = x
             else:
-                size = self.find_element(element).bounds.center()
-                actual = size.x
+                x, y = self.find_element(element).bounds.center
+                actual = x
             self.test.debugLog("成功获取元素X坐标:%s" % str(actual))
         except Exception as e:
             self.test.errorLog("无法获取元素X坐标")
@@ -107,8 +107,8 @@ class Relation(Operation):
                 x, y = self.find_element(element).center()
                 actual = y
             else:
-                size = self.find_element(element).bounds.center()
-                actual = size.y
+                x, y = self.find_element(element).bounds.center
+                actual = y
             self.test.debugLog("成功获取元素Y坐标:%s" % str(actual))
         except Exception as e:
             self.test.errorLog("无法获取元素Y坐标")

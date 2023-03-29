@@ -48,6 +48,10 @@ class AppOperationCollector:
                 if element["by"].lower() == "prop":
                     for prop in json.loads(element["expression"]):
                         props[prop["propName"]] = prop["propValue"]
+                elif element["by"].lower() == "pred":
+                    props["predicate"] = element["expression"]
+                elif element["by"].lower() == "class":
+                    props["classChain"] = element["expression"]
                 else:
                     props[element["by"].lower()] = element["expression"]
                 elements[name] = props

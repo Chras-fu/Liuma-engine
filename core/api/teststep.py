@@ -177,17 +177,12 @@ class ApiTestStep:
         else:
             results = conn.query(sql["sqlText"])
             names = sql["names"].split(",")  # name数量可以比结果数量段，但不能长，不能会indexError
-            values = {}
-            for r in results:
-                for i, v in enumerate(r):
-                    if i not in values.keys():
-                        values[i] = []
-                    values[i].append(v)
+            values = list(zip(*list(results)))
             for j, n in enumerate(names):
                 if len(values) == 0:
                     self.context[n] = []    # 如果查询结果为空 则变量保存为空数组
                     continue
-                if j not in values.keys():
+                if j >= len(values):
                     raise IndexError("变量数错误, 请检查变量数配置是否与查询语句一致，当前查询结果: <br>{}".format(results))
                 self.context[n] = values[j]  # 保存变量到变量空间
 

@@ -44,7 +44,7 @@ class ApiTestCase:
             if len(step.collector.looper) > 0 and not (loop_id != "root" and step_n == 0):
                 # 非根循环 且并非循环第一个接口时才执行循环 从而避免循环套循环情况下的死循环
                 step.looper_controller(self, api_list, step_n)
-                step_n = step_n + step.collector.looper["num"] - 1  # 跳过本次循环中执行的接口
+                step_n = step_n + step.collector.looper["num"]  # 跳过本次循环中执行的接口
                 continue  # 母循环最后一个接口索引必须超过子循环的最后一个接口索引 否则超过母循环的接口无法执行
             step_n += 1
             # 定义事务

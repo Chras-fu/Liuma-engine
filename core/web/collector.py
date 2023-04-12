@@ -1,3 +1,18 @@
+from selenium.webdriver.common.by import By
+
+
+locator = {
+    "ID": By.ID,
+    "XPATH": "xpath",
+    "LINK": "link text",
+    "PARTIAL": "partial link text",
+    "NAME": "name",
+    "TAG": "tag name",
+    "CLASS": "class name",
+    "CSS": "css selector"
+}
+
+
 class WebOperationCollector:
 
     def __init__(self):
@@ -37,7 +52,7 @@ class WebOperationCollector:
         else:
             elements = {}
             for name, element in opt_element.items():
-                elements[name] = (element["by"].lower(), element["expression"])
+                elements[name] = (locator[element["by"]], element["expression"])
             self.opt_element = elements
 
     def collect_opt_data(self, ui_data):

@@ -60,7 +60,7 @@ class Relation(Operation):
             if system == "android":
                 actual = self.find_element(element).get_text()
             else:
-                actual = self.find_element(element).text()
+                actual = self.find_element(element).text
             self.test.debugLog("成功获取元素文本:%s" % str(actual))
         except Exception as e:
             self.test.errorLog("无法获取元素文本")

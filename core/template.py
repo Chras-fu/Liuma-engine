@@ -105,6 +105,8 @@ class Template:
                     raise KeyError('不存在的公共参数、关联变量或内置函数: {}'.format(key))
 
                 if not flag and type(value) is str:
+                    if '"' in value:
+                        value = json.dumps(value)[1:-1]
                     final_value = value
                 elif isinstance(value, bytes):
                     final_value = self._bytes_save(value, flag)

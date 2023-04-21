@@ -77,7 +77,7 @@ class AppTestStep:
             else:
                 self.test.errorLog('[{}]断言失败: {}'.format(self.collector.opt_trans,
                                                              self.result[1]))
-                self.test.saveScreenShot(self.collector.opt_trans, self.device.get_screenshot_as_png())
+                self.test.saveScreenShot(self.collector.opt_trans, self.device.screenshot(format='raw'))
                 if "continue" in self.collector.opt_data and self.collector.opt_data["continue"] is True:
                     try:
                         raise AssertionError(self.result[1])

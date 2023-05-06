@@ -96,9 +96,7 @@ def get_case_message(data):
                 return json.load(f)
 
 
-def handle_operation_data(data):
-    data_type = data["type"]
-    data_value = data["value"]
+def handle_operation_data(data_type, data_value):
     try:
         if data_type == "JSONObject":
             data_value = eval(data_value)

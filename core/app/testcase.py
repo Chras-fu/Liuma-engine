@@ -90,7 +90,7 @@ class AppTestCase:
         _looper = self.template.render()
         for name, param in _looper.items():
             if name != "target" or name != "expect":    # 断言实际值不作数据处理
-                _looper[name] = handle_operation_data(param)
+                _looper[name] = handle_operation_data(param["type"], param["value"])
         if "times" in _looper:
             try:
                 times = int(_looper["times"])
@@ -112,8 +112,7 @@ class AppTestCase:
                 param_value = param["value"]
                 if isinstance(param_value, str) and self.comp.search(param_value) is not None:
                     self.template.init(param_value)
-                    render_value = self.template.render()
-                    param["value"] = render_value
-                data[name] = handle_operation_data(param)
+                    param_value = self.template.render()
+                data[name] = handle_operation_data(param["type"], param_value)
             step.collector.opt_data = data
 

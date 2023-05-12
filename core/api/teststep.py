@@ -62,6 +62,7 @@ class ApiTestStep:
                 self.collector.others['data'] = str(self.collector.others['data']).encode("utf-8")
             if 'files' in self.collector.others and self.collector.others['files'] is not None:
                 self.pop_content_type()
+            self.collector.others['verify'] = False
             url = url_join(self.collector.url, self.collector.path)
             if int(self.collector.controller["sleepBeforeRun"]) > 0:
                 sleep(int(self.collector.controller["sleepBeforeRun"]))

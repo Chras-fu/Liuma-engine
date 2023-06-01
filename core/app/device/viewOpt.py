@@ -34,7 +34,10 @@ class View(Operation):
         """长按"""
         try:
             if system == "android":
-                self.find_element(element).long_click(second)
+                if "xpath" in element:
+                    self.find_element(element).long_click()
+                else:
+                    self.find_element(element).long_click(second)
             else:
                 self.find_element(element).tap_hold(second)
             self.test.debugLog("成功长按%sS" % str(second))
@@ -67,9 +70,9 @@ class View(Operation):
         """坐标长按 百分比或坐标值"""
         try:
             if system == "android":
-                self.device.tap_hold(x, y, second)
-            else:
                 self.device.long_click(x, y, second)
+            else:
+                self.device.tap_hold(x, y, second)
             self.test.debugLog("成功坐标长按%sS" % str(second))
         except Exception as e:
             self.test.errorLog("无法坐标长按%sS" % str(second))

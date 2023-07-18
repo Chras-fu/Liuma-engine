@@ -234,13 +234,16 @@ class Template:
         end = -1
         length = len(arg_list)
         for i in range(start, length):
-            if terminal_char in arg_list[i] and i > end:
+            if terminal_char in arg_list[i]:
                 end = i
-        s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
-        r = json.loads(quotation_marks(s))
-        if isinstance(r, str):
-            r = json.loads(r)
-        return end + 1, r
+                try:
+                    s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
+                    return end + 1, eval(quotation_marks(s))
+                except:
+                    continue
+        else:
+            s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
+            return end + 1, s
 
 
 class SplitFunctionError(Exception):

@@ -27,7 +27,11 @@ class SQLConnect:
             self.conn = pgsql.connect(host=self.host, user=self.user,
                                       password=self.pwd, database=self.db, port=self.port)
         elif self.tpz == "oracle":
-            self.conn = oracle.connect(self.user, self.pwd, f"{self.host}:{self.port}/{self.db}")
+            try:
+                self.conn = oracle.connect(self.user, self.pwd, f"{self.host}:{self.port}/{self.db}")
+            except:
+                sn = oracle.makedsn(self.host, self.port, sid=self.db)
+                self.conn = oracle.connect(self.user, self.pwd, sn)
         else:
             raise TypeError("不支持的数据库类型")
         cur = self.conn.cursor()

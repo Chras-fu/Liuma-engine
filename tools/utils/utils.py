@@ -233,12 +233,12 @@ def relate_sort(data, data_from):
                 break
     for (key, value) in sorted_list:
         if data_from == "query":
-            sign = "#{_REQUEST_QUERY}"
+            sign = "#{_request_query}"
         elif data_from == "headers":
-            sign = "#{_REQUEST_HEADERS}"
+            sign = "#{_request_header}"
         else:
-            sign = "#{_REQUEST_BODY}"
-        if sign in str(value):
+            sign = "#{_request_body}"
+        if sign in str(value).lower():
             sorted_list.remove((key, value))
             sorted_list.append((key, value))
             break

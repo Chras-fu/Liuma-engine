@@ -232,7 +232,7 @@ class Template:
 
     @staticmethod
     def concat(start: int, arg_list: list, terminal_char: str):
-        end = -1
+        end = start
         length = len(arg_list)
         for i in range(start, length):
             if terminal_char in arg_list[i]:

@@ -139,7 +139,7 @@ class ApiTestCase:
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
         self.template.set_help_data(step.collector.path, headers, query, body)
-        if "#{_REQUEST_QUERY}" in str(headers) or "#{_REQUEST_BODY}" in str(headers):
+        if "#{_REQUEST_QUERY}" in str(headers).lower() or "#{_REQUEST_BODY}" in str(headers).lower():
             self.render_json(step, query, "query")
             self.render_json(step, body, "body", pop_key)
             self.render_json(step, headers, "headers")

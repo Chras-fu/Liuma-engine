@@ -139,7 +139,7 @@ class ApiTestCase:
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
         self.template.set_help_data(step.collector.path, headers, query, body)
-        if "#{_REQUEST_QUERY}" in str(headers).lower() or "#{_REQUEST_BODY}" in str(headers).lower():
+        if "#{_request_query}" in str(headers).lower() or "#{_request_body}" in str(headers).lower():
             self.render_json(step, query, "query")
             self.render_json(step, body, "body", pop_key)
             self.render_json(step, headers, "headers")
@@ -162,7 +162,7 @@ class ApiTestCase:
             render_value = self.template.render()
             self.template.request_body = render_value
         else:
-            for expr, value in get_json_relation(data, "body"):
+            for expr, value in get_json_relation(data, name):
                 if isinstance(value, str) and self.comp.search(value) is not None:
                     self.template.init(value)
                     render_value = self.template.render()

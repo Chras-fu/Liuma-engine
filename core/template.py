@@ -99,7 +99,6 @@ class Template:
                         value = self.params.get(key[:-1])[index]
                 elif key.startswith(self.function_prefix):
                     name_args = self.split_func(key, self.function_prefix)
-                    name_args = [_ for _ in map(self.replace_param, name_args)]
                     value = self.func_lib(name_args[0], *name_args[1:])
                 else:
                     raise KeyError('不存在的公共参数、关联变量或内置函数: {}'.format(key))
@@ -157,8 +156,7 @@ class Template:
             return self.bytes_map[expr]
 
     def replace_param(self, param):
-        if not isinstance(param, str):
-            return param
+        param = param.strip()
         search_result = re.search(r'#\{(.*?)\}', param)
         if search_result is not None:
             expr = search_result.group(1).strip()
@@ -175,7 +173,10 @@ class Template:
             else:
                 if not expr.startswith('$'):
                     expr = '$.' + expr
-                return extract_by_jsonpath(self.request_body, expr)
+                try:
+                    return extract_by_jsonpath(self.request_body, expr)
+                except:
+                    return param
         else:
             return param
 
@@ -187,7 +188,7 @@ class Template:
             name, args = m.groups()
             result.append(name)
             if args is not None and args != '()':
-                argList = [arg.strip() for arg in args[1:-1].split(',')]
+                argList = [str(_) for _ in map(self.replace_param, args[1:-1].split(','))]
                 argList_length = len(argList)
                 if not (argList_length == 1 and len(argList[0]) == 0):
                     if name not in self.func_lib.func_param:
@@ -236,11 +237,15 @@ class Template:
         for i in range(start, length):
             if terminal_char in arg_list[i]:
                 end = i
+                s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
                 try:
-                    s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
                     return end + 1, eval(quotation_marks(s))
                 except:
-                    continue
+                    try:
+                        s = '"'+s+'"'
+                        return end + 1, eval(json.loads(s))
+                    except:
+                        continue
         else:
             s = reduce(lambda x, y: x + ',' + y, arg_list[start:end + 1])
             return end + 1, s

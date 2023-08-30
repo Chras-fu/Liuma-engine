@@ -81,6 +81,7 @@ class AppTestCase:
             return device
         else:
             device = device.session(self.case_message['appId'])
+            device._wda_url = f"http://{self.case_message['deviceUrl']}"
             return device
 
     def after_execute(self):

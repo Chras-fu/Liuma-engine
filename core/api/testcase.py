@@ -139,14 +139,24 @@ class ApiTestCase:
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
         self.template.set_help_data(step.collector.path, headers, query, body)
-        if "#{_request_query}" in str(headers).lower() or "#{_request_body}" in str(headers).lower():
-            self.render_json(step, query, "query")
-            self.render_json(step, body, "body", pop_key)
-            self.render_json(step, headers, "headers")
+        if "#{_request_query" in str(headers).lower() or "#{_request_body" in str(headers).lower():
+            if "#{_request_body" in str(query).lower():
+                self.render_json(step, body, "body", pop_key)
+                self.render_json(step, query, "query")
+                self.render_json(step, headers, "headers")
+            else:
+                self.render_json(step, query, "query")
+                self.render_json(step, body, "body", pop_key)
+                self.render_json(step, headers, "headers")
         else:
-            self.render_json(step, headers, "headers")
-            self.render_json(step, query, "query")
-            self.render_json(step, body, "body", pop_key)
+            if "#{_request_body" in str(query).lower():
+                self.render_json(step, headers, "headers")
+                self.render_json(step, body, "body", pop_key)
+                self.render_json(step, query, "query")
+            else:
+                self.render_json(step, headers, "headers")
+                self.render_json(step, query, "query")
+                self.render_json(step, body, "body", pop_key)
         if step.collector.assertions is not None:
             self.template.init(step.collector.assertions)
             step.collector.assertions = self.template.render()

@@ -74,32 +74,25 @@ class Template:
                     flag = False
                 tmp = tmp[::-1]
                 key = tmp[start_length:-end_length].strip()
-                index = None
-                if key.endswith(']') and '[' in key:
-                    keys = key.split("[")
-                    key = keys[0]
-                    try:
-                        index = int(keys[-1][:-1])
-                    except:
-                        index = None
-                if key in self.context: # 优先从关联参数中取
-                    if index is None:
-                        value = self.context.get(key)
-                    else:
-                        value = self.context.get(key)[index]
-                elif key in self.params:
-                    if index is None:
-                        value = self.params.get(key)
-                    else:
-                        value = self.params.get(key)[index]
-                elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
-                    if index is None:
-                        value = self.params.get(key[1:])
-                    else:
-                        value = self.params.get(key[:-1])[index]
-                elif key.startswith(self.function_prefix):
+                key, json_path = self.split_key(key)
+                if key.startswith(self.function_prefix):
                     name_args = self.split_func(key, self.function_prefix)
                     value = self.func_lib(name_args[0], *name_args[1:])
+                elif key in self.context: # 优先从关联参数中取
+                    if json_path is None:
+                        value = self.context.get(key)
+                    else:
+                        value = extract_by_jsonpath(self.context.get(key), json_path)
+                elif key in self.params:
+                    if json_path is None:
+                        value = self.params.get(key)
+                    else:
+                        value = extract_by_jsonpath(self.params.get(key), json_path)
+                elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
+                    if json_path is None:
+                        value = self.params.get(key[1:])
+                    else:
+                        value = extract_by_jsonpath(self.params.get(key[1:]), json_path)
                 else:
                     raise KeyError('不存在的公共参数、关联变量或内置函数: {}'.format(key))
 
@@ -171,14 +164,44 @@ class Template:
             elif expr.startswith('bytes_'):
                 return self.bytes_map[expr]
             else:
-                if not expr.startswith('$'):
-                    expr = '$.' + expr
+                # 支持从请求头和查询参数中取单个数据
+                if expr.lower().startswith("_request_header."):
+                    data = self.request_headers
+                    expr = '$.' + expr[16:]
+                elif expr.lower().startswith("_request_query."):
+                    data = self.request_query
+                    expr = '$.' + expr[15:]
+                else:
+                    data = self.request_body
+                    if expr.lower().startswith("_request_body."):
+                        expr = '$.' + expr[14:]
+                    elif not expr.startswith('$'):
+                        expr = '$.' + expr
                 try:
-                    return extract_by_jsonpath(self.request_body, expr)
+                    return extract_by_jsonpath(data, expr)
                 except:
                     return param
         else:
             return param
+
+    def split_key(self, key: str):
+        if key.startswith(self.function_prefix):
+            return key, None
+        key_list = key.split(".")
+        key = key_list[0]
+        json_path = None
+        if len(key_list) > 1:
+            json_path = reduce(lambda x, y: x + '.' + y, key_list[1:])
+        if key.endswith(']') and '[' in key:
+            keys = key.split("[")
+            key = keys[0]
+            if json_path is None:
+                json_path = keys[-1][:-1]
+            else:
+                json_path = keys[-1][:-1] + "." + json_path
+        if json_path is not None:
+            json_path = "$." + json_path
+        return key, json_path
 
     def split_func(self, statement: str, flag: 'str' = '@'):
         pattern = flag + r'([_a-zA-Z][_a-zA-Z0-9]*)(\(.*?\))?'

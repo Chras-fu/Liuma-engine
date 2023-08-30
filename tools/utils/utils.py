@@ -5,8 +5,8 @@ import jsonpath
 import copy
 
 
-def extract_by_jsonpath(data: (dict, str), expression: str):
-    if not isinstance(data, dict):
+def extract_by_jsonpath(data: (dict,list, str), expression: str):
+    if not isinstance(data, dict) and not isinstance(data, list):
         raise ExtractValueError('被提取的值不是json, 不支持jsonpath')
     value = jsonpath.jsonpath(data, expression)
     if value:
@@ -76,7 +76,7 @@ def proxies_join(proxies: dict):
         raise ProxiesError("未设置代理账号或密码")
 
 
-def extract(name: str, data: (dict, str), expression: str):
+def extract(name: str, data: (dict, list, str), expression: str):
     if name == 'jsonpath':
         return extract_by_jsonpath(data, expression)
     elif name == 'regular':

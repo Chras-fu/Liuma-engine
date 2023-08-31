@@ -182,7 +182,7 @@ def handle_files(files):
 
 
 def json_to_path(data):
-    queue = [("_REQUEST_BODY", data)]
+    queue = [("$", data)]
     fina = {}
     while len(queue) != 0:
         (path, tar) = queue.pop()
@@ -213,9 +213,9 @@ def relate_sort(data, data_from):
     relate_list = []
     for key, value in data.items():
         if "#{" in str(value):
-            relate_list.append((key.replace("_REQUEST_BODY", "$"), value))
+            relate_list.append((key, value))
         else:
-            not_relate_list.append((key.replace("_REQUEST_BODY", "$"), value))
+            not_relate_list.append((key, value))
     copy_list = copy.deepcopy(relate_list)
     sorted_list = []
     for index in range(len(relate_list)):

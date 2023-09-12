@@ -212,7 +212,8 @@ class Template:
         m = re.match(pattern, statement)
         result = list()
         if m is not None:
-            name, args = m.groups()
+            name, _ = m.groups()
+            args = statement.replace(flag+name, "")
             result.append(name)
             if args is not None and args != '()':
                 argList = [str(_) for _ in map(self.replace_param, args[1:-1].split(','))]

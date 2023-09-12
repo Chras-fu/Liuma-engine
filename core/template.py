@@ -23,6 +23,7 @@ class Template:
         self.param_prefix = param_prefix
         self.stack = list()
         # 动态存储接口的请求信息 以便渲染
+        self.request_url = None
         self.request_path = None
         self.request_headers = None
         self.request_query = None
@@ -36,7 +37,8 @@ class Template:
         self.stack.clear()
         self.bytes_map.clear()
 
-    def set_help_data(self, path: str, headers: dict, query: dict, body: dict):
+    def set_help_data(self, url, path: str, headers: dict, query: dict, body: dict):
+        self.request_url = url
         self.request_path = path
         self.request_headers = headers
         self.request_query = query
@@ -153,7 +155,9 @@ class Template:
         search_result = re.search(r'#\{(.*?)\}', param)
         if search_result is not None:
             expr = search_result.group(1).strip()
-            if expr.lower() == '_request_path':
+            if expr.lower() == '_request_url':
+                return self.request_url
+            elif expr.lower() == '_request_path':
                 return self.request_path
             elif expr.lower() == '_request_header':
                 return self.request_headers

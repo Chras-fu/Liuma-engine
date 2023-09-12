@@ -138,7 +138,7 @@ class ApiTestCase:
             pop_key = None
         self.template.init(step.collector.others)
         step.collector.others = self.template.render()
-        self.template.set_help_data(step.collector.path, headers, query, body)
+        self.template.set_help_data(step.collector.url, step.collector.path, headers, query, body)
         if "#{_request_query" in str(headers).lower() or "#{_request_body" in str(headers).lower():
             if "#{_request_body" in str(query).lower():
                 self.render_json(step, body, "body", pop_key)

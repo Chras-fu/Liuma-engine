@@ -122,8 +122,6 @@ class Browser(Operation):
     def open_url(self, domain, path):
         """打开网页"""
         try:
-            if domain is None:
-                domain = ""
             url = url_join(domain, path)
             self.driver.get(url)
             self.driver.implicitly_wait(2)

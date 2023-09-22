@@ -58,13 +58,13 @@ class ApiRequestCollector:
         self.method = method
 
     def collect_url(self, api_data):
-        if 'url' not in api_data or api_data['url'] is None or len(api_data['url']) == 0:
+        if 'url' not in api_data:
             raise UnDefinablePathError("接口{}未设置域名".format(api_data['apiId']))
         else:
             self.url = api_data['url']
 
     def collect_path(self, api_data):
-        if 'path' not in api_data or api_data['path'] is None or len(api_data['path']) == 0:
+        if 'path' not in api_data:
             raise UnDefinablePathError("接口{}未设置路径".format(api_data['apiId']))
         else:
             fields = re.findall(r'\{(.*?)\}', api_data['path'])

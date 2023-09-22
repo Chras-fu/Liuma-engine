@@ -47,8 +47,8 @@ def quotation_marks(s):
 
 
 def url_join(host: str, path: str):
-    url = host if host.endswith('/') else host + '/'
-    api = path[1:] if path.startswith('/') else path
+    url = "" if host is None or host == "" else (host if host.endswith('/') else host + '/')
+    api = "" if path is None or path == "" else (path[1:] if path.startswith('/') else path)
     return url + api
 
 

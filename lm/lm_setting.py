@@ -116,24 +116,20 @@ class LMSetting(object):
 
     @staticmethod
     def read_fail_case(test_plan, result):
-        new_test_plan = copy.deepcopy(test_plan)
-        for collection, test_case_list in new_test_plan.items():
+        new_test_plan = {}
+        for collection, test_case_list in test_plan.items():
             for test in test_case_list:
                 case_id = test["test_case"].split("_")[1]
                 index = test["test_case"].split("_")[-1]
                 for case in result:
                     if case["collectionId"] == collection and case["caseId"] == case_id and case["index"] == int(index):
-                        if case["status"] in (0, 3):
-                            for old_test in test_plan[collection]:
-                                if old_test["test_case"] == test["test_case"]:
-                                    test_plan[collection].remove(old_test)
-                                    break
+                        if case["status"] in (1, 2):
+                            if collection not in new_test_plan:
+                                new_test_plan[collection] = []
+                            new_test_plan[collection].append(test)
                         result.remove(case)
                         break
-            else:
-                if len(test_plan[collection]) == 0:
-                    del test_plan[collection]
-        return test_plan
+        return new_test_plan
 
     
 class LMSession(object):

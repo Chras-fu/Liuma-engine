@@ -31,6 +31,7 @@ class ApiTestStep:
         self.params = params
         self.test = test
         self.status_code = None
+        self.response_request = None
         self.response_headers = None
         self.response_content = None
         self.response_content_bytes = None
@@ -79,6 +80,7 @@ class ApiTestStep:
             else:
                 res = request(self.collector.method, url, **self.collector.others)
             end_time = datetime.datetime.now()
+            self.response_request = res.request
             self.test.recordTransDuring(int((end_time-start_time).microseconds/1000))
             self.save_response(res)
             response_log = '【响应信息】:<br>'
@@ -157,6 +159,7 @@ class ApiTestStep:
                 raise KeyError("不存在的公共参数或关联变量: {}".format(name))
 
         names = locals()
+        names["res_request"] = self.response_request
         names["res_code"] = self.status_code
         names["res_header"] = self.response_headers
         names["res_data"] = self.response_content

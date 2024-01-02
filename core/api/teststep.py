@@ -278,9 +278,7 @@ class ApiTestStep:
 
 
 def dict2str(data):
-    if isinstance(data, dict):
-        return json.dumps(data, ensure_ascii=False)
-    elif not isinstance(data, str):
+    if not isinstance(data, str):
         return str(data)
     else:
         return data

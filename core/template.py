@@ -13,6 +13,7 @@ from tools.utils.utils import extract_by_jsonpath, quotation_marks
 class Template:
 
     def __init__(self, test, context, functions, params, variable_start_string='{{', variable_end_string='}}', function_prefix='@', param_prefix='$'):
+        self.test = test
         self.param_prefix = param_prefix
         self.data = None
         self.context = context  # 关联参数
@@ -77,29 +78,33 @@ class Template:
                 tmp = tmp[::-1]
                 key = tmp[start_length:-end_length].strip()
                 key, json_path = self.split_key(key)
-                if key.startswith(self.function_prefix):
-                    name_args = self.split_func(key, self.function_prefix)
-                    value = self.func_lib(name_args[0], *name_args[1:])
-                elif key in self.context: # 优先从关联参数中取
-                    if json_path is None:
-                        value = self.context.get(key)
+                try:
+                    if key.startswith(self.function_prefix):
+                        name_args = self.split_func(key, self.function_prefix)
+                        value = self.func_lib(name_args[0], *name_args[1:])
+                    elif key in self.context: # 优先从关联参数中取
+                        if json_path is None:
+                            value = self.context.get(key)
+                        else:
+                            value = extract_by_jsonpath(self.context.get(key), json_path)
+                    elif key in self.params:
+                        if json_path is None:
+                            value = self.params.get(key)
+                        else:
+                            value = extract_by_jsonpath(self.params.get(key), json_path)
+                    elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
+                        if json_path is None:
+                            value = self.params.get(key[1:])
+                        else:
+                            value = extract_by_jsonpath(self.params.get(key[1:]), json_path)
                     else:
-                        value = extract_by_jsonpath(self.context.get(key), json_path)
-                elif key in self.params:
-                    if json_path is None:
-                        value = self.params.get(key)
-                    else:
-                        value = extract_by_jsonpath(self.params.get(key), json_path)
-                elif key.startswith(self.param_prefix) and key[1:] in self.params:  # 兼容老版本
-                    if json_path is None:
-                        value = self.params.get(key[1:])
-                    else:
-                        value = extract_by_jsonpath(self.params.get(key[1:]), json_path)
-                else:
-                    raise KeyError('不存在的公共参数、关联变量或内置函数: {}'.format(key))
+                        value = tmp
+                except:
+                    value = tmp
+                    print('不存在的公共参数、关联变量或内置函数: {}'.format(key), file=self.test.stdout_buffer)
 
                 if not flag and isinstance(value, str):
-                    if '"' in value:
+                    if '"' in value and value != tmp:
                         value = json.dumps(value)[1:-1]
                     final_value = value
                 elif isinstance(value, bytes):
@@ -113,7 +118,10 @@ class Template:
                             final_value.append(list_item)
                     final_value = json.dumps(final_value)
                 else:
-                    final_value = json.dumps(value)
+                    if value == tmp and isinstance(value, str):
+                        final_value = '"'+value+'"'
+                    else:
+                        final_value = json.dumps(value)
                 for s in final_value:
                     self.stack.append(s)
                     top += 1

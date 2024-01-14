@@ -1,145 +1,115 @@
 # -*- coding: utf-8 -*-
 import threading
 from multiprocessing import Process, Queue, Value
-import time, os, datetime
+import time, os
 from lm.lm_api import LMApi
 from lm.lm_setting import LMSetting
 from lm.lm_report import LMReport
 from lm.lm_log import DebugLogger, ErrorLogger
-from lm.lm_config import LOG_PATH, IMAGE_PATH
+from lm.lm_config import LOG_PATH, IMAGE_PATH, LMConfig
 from lm.lm_upload import LMUpload
 import psutil
-import inspect
-import ctypes
-
-
-def _async_raise(tid, exctype):
-    """关闭线程方法"""
-    tid = ctypes.c_long(tid)
-    if not inspect.isclass(exctype):
-        exctype = type(exctype)
-    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
-    if res > 1:
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-        return False
-    elif res == 0:
-        return True
-    else:
-        return True
-
-
-def stop_thread(thread):
-    try:
-        return _async_raise(thread.ident, SystemExit)
-    except:
-        return False
+from lm.lm_ws import Client
 
 
 class LMStart(object):
 
     def __init__(self):
         self.api = LMApi()
+        self.config = LMConfig()
+        self.exec_processes = {}
 
     def main(self):
         """"启动入口"""
-        exec_status = Value("i", 1)   # 执行状态 0 执行中、 1 待执行 默认待执行
+        message_queue = Queue()     # 消息队列
+        status_thread = threading.Thread(target=self.send_heartbeat, args=(message_queue,))
+        status_thread.start()   # 启动心跳链接
+        task_queue = Queue()    # 任务队列
+        task_thread = threading.Thread(target=self.fetch_task, args=(task_queue,))
+        task_thread.start()  # 启动拉取任务 初始化一次 避免任务遗漏
+        monitor_thread = threading.Thread(target=self.monitor_message, args=(message_queue, task_queue))
+        monitor_thread.start()     # 启动消息监听
         while True:
-            retry = 0   # 关闭线程重试次数
-            status_thread = threading.Thread(target=self.send_heartbeat)
-            status_thread.start()
-            task_queue = Queue()
-            task_status_queue = Queue()
-            task_thread = threading.Thread(target=self.get_task, args=(task_queue, task_status_queue, exec_status))
-            task_thread.start()
-            while retry < 3:    # 线程重试超过3次则默认线程需要重启
-                if not status_thread.is_alive():
-                    result = stop_thread(task_thread)
-                    if result:
-                        break
-                    else:
-                        retry += 1
-                        continue
-                if not task_thread.is_alive():
-                    result = stop_thread(status_thread)
-                    if result:
-                        break
-                    else:
-                        retry += 1
-                        continue
-                try:
-                    task = task_queue.get(True, 1)
-                except Exception:
-                    continue
-                else:
-                    DebugLogger("接受任务成功 启动执行进程")
-                    case_result_queue = Queue()
-                    current_exec_status = Value("i", 0)   # 0 执行中、 1 执行结束
-                    run_process = Process(target=self.run_test, args=(task, case_result_queue, current_exec_status))
-                    run_process.start()
-                    report_process = Process(target=self.push_result, args=(exec_status, case_result_queue))
-                    report_process.start()
-                    upload_process = Process(target=self.upload_image, args=(task, current_exec_status))
-                    upload_process.start()
-                finally:
-                    if not exec_status.value:
-                        try:
-                            task_status = task_status_queue.get(True, 0.05)
-                        except Exception:
-                            task_status = ""
-                        finally:
-                            try:
-                                if task_status == "STOP":
-                                    exec_status.value = 1
-                                    if report_process.is_alive():
-                                        report_process.terminate()
-                                    if run_process.is_alive():
-                                        for p in psutil.Process(run_process.pid).children():
-                                            p.terminate()
-                                        run_process.terminate()
-                                    DebugLogger("引擎终止任务成功 任务id: %s" % task["taskId"])
-                                    DebugLogger("-------------------------------------------------")
-                                elif not report_process.is_alive():
-                                    exec_status.value = 1
-                                    if run_process.is_alive():
-                                        for p in psutil.Process(run_process.pid).children():
-                                            p.terminate()
-                                        run_process.terminate()
-                                elif not run_process.is_alive() and case_result_queue.empty():
-                                    start_time = datetime.datetime.now()
-                                    while (datetime.datetime.now() - start_time).seconds < 30:
-                                        # 循环等待30s 防止最后一条结果数据没有发送出去 如果报告进程自销则中止等待
-                                        if not report_process.is_alive():
-                                            break
-                                        time.sleep(3)
-                                    exec_status.value = 1
-                                    if report_process.is_alive():
-                                        report_process.terminate()
-                            except Exception as e:
-                                ErrorLogger("关闭执行任务时发生错误 错误信息为：%s" % e)
+            try:
+                task = task_queue.get(True, 1)
+            except:
+                continue
+            else:
+                DebugLogger("接受任务成功 启动执行进程 任务id: %s" % task["taskId"])
+                case_result_queue = Queue()
+                current_exec_status = Value("i", 0)  # 0 执行中、 1 执行结束
+                run_process = Process(target=self.run_test, args=(task, case_result_queue, current_exec_status))
+                run_process.start()
+                report_process = Process(target=self.push_result, args=(message_queue, case_result_queue))
+                report_process.start()
+                upload_process = Process(target=self.upload_image, args=(task, current_exec_status))
+                upload_process.start()
+                self.exec_processes[task["taskId"]] = [run_process, report_process, upload_process]     # 保存当前进程
 
-    def send_heartbeat(self):
-        log_path = os.path.join(LOG_PATH, "engine_status.log")
+    def send_heartbeat(self, queue):
         while True:
-            DebugLogger("-------------------------------------------------", file_path=log_path)
-            DebugLogger("发送心跳", file_path=log_path)
-            DebugLogger("-------------------------------------------------", file_path=log_path)
-            self.api.send_heartbeat(log_path)
-            time.sleep(60)
+            log_path = os.path.join(LOG_PATH, "engine_status.log")
+            domain = self.config.url[:-1] if self.config.url.endswith("/") else self.config.url
+            url = domain.replace("http", "ws") + "/websocket/engine/heartbeat?engineCode={}&engineSecret={}". \
+                format(self.config.engine, self.config.secret)
+            try:
+                ws = Client(url, queue)
+                ws.connect()
+                while True:
+                    time.sleep(30)
+                    ws.send(bytes(0))   # 每隔30秒更新心跳
+                    DebugLogger("-------------------------------------------------", file_path=log_path)
+                    DebugLogger("心跳更新成功", file_path=log_path)
+                    DebugLogger("-------------------------------------------------", file_path=log_path)
+            except KeyboardInterrupt:
+                ws.close()
+            except Exception as e:
+                DebugLogger("-------------------------------------------------", file_path=log_path)
+                ErrorLogger("心跳连接失败 1秒钟后重试 失败原因%s" % e, file_path=log_path)
+                DebugLogger("-------------------------------------------------", file_path=log_path)
+            time.sleep(1)
 
-    def get_task(self, task_queue, task_status_queue, status):
+    def fetch_task(self, queue):
         while True:
-            if status.value:
+            if len(self.exec_processes) < int(self.config.max_run):
                 task = self.api.fetch_task()
                 if task:
-                    DebugLogger("-------------------------------------------------")
+                    self.exec_processes[task["taskId"]] = []
                     DebugLogger("引擎获取任务成功 任务id: %s" % (task["taskId"]))
-                    task_queue.put(task)
-                    status.value = 0
+                    queue.put(task)
+                else:   # 没有任务 停止获取
+                    break
             else:
-                data = self.api.get_task_status(task["taskId"])
-                if data:
-                    task_status_queue.put(data)
-            time.sleep(3)
+                time.sleep(3)
+
+    def monitor_message(self, message_queue, task_queue):
+        while True:
+            try:
+                message = message_queue.get(True, 0.1)
+            except:
+                continue
+            else:
+                if message["type"] == "start":
+                    task_thread = threading.Thread(target=self.fetch_task, args=(task_queue,))
+                    task_thread.start()
+                elif message["type"] == "stop":
+                    if message["data"] in self.exec_processes:
+                        processes = self.exec_processes[message["data"]]
+                        for process in processes:
+                            if process.is_alive():
+                                process.terminate()
+                        del self.exec_processes[message["data"]]
+                        DebugLogger("引擎终止任务成功 任务id: %s" % message["data"])
+                elif message["type"] == "stopAll":
+                    for task_id, processes in self.exec_processes.items():
+                        for process in processes:
+                            if process.is_alive():
+                                process.terminate()
+                        DebugLogger("引擎终止任务成功 任务id: %s" % task_id)
+                    self.exec_processes.clear()
+                else:  # completed
+                    if message["data"] in self.exec_processes:
+                        del self.exec_processes[message["data"]]
 
     @staticmethod
     def run_test(task, queue, current_exec_status):
@@ -148,8 +118,8 @@ class LMStart(object):
         s.create_thread(plan, queue, current_exec_status)
 
     @staticmethod
-    def push_result(exec_status, case_result_queue):
-        report = LMReport(exec_status, case_result_queue)
+    def push_result(message_queue, case_result_queue):
+        report = LMReport(message_queue, case_result_queue)
         report.monitor_result()
 
     @staticmethod

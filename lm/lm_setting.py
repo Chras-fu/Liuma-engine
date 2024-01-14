@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import copy
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests import Session
@@ -24,7 +23,7 @@ class LMSetting(object):
         try:
             file = LMApi().download_task_file(data_url)
         except Exception as e:
-            ErrorLogger("数据拉取失败 错误信息: %s" % str(e))
+            ErrorLogger("数据拉取失败 错误信息: %s 任务id: %s" % (str(e), self.task["taskId"]))
             return None
         else:
             file_path = os.path.join(self.data_path, str(self.task["taskId"]) + ".zip")
@@ -33,7 +32,7 @@ class LMSetting(object):
                     if chunk:
                         f.write(chunk)
             f.close()
-            DebugLogger("数据拉取成功")
+            DebugLogger("数据拉取成功 任务id: %s" % self.task["taskId"])
             return file_path
 
     def file_unzip(self, file_path):

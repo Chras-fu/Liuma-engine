@@ -4,7 +4,6 @@ import requests
 import time
 from lm.lm_config import *
 from lm.lm_log import DebugLogger, ErrorLogger
-from tools.utils import utils
 
 
 class Api(object):
@@ -15,11 +14,6 @@ class Api(object):
         self.engine = config.engine
         self.secret = config.secret
         self.proxy = None
-        if config.enable_proxy.lower() == "true":
-            try:
-                self.proxy = utils.proxies_join(config.platform_proxy)
-            except:
-                pass
 
     def request(self, url, data):
         header = self.load_header()
@@ -69,35 +63,6 @@ class LMApi(Api):
                 DebugLogger("调用申请token接口 响应状态为：%s" % res.status_code)
         except Exception as e:
             ErrorLogger("调用申请token接口 发生错误 错误信息为：%s" % e)
-
-    def send_heartbeat(self, log_path):
-        """"发送心跳"""
-        url = self.url + "/openapi/engine/heartbeat/send"
-        for index in range(2):
-            data = {
-                "engineCode": self.engine,
-                "timestamp": int(time.time())
-            }
-            try:
-                if index > 0:
-                    DebugLogger("-------重试调用发送引擎心跳接口--------", file_path=log_path)
-                res = self.request(url, data)
-                if res.status_code == 200:
-                    status = res.json()["status"]
-                    if status == 0:
-                        DebugLogger("发送引擎心跳成功", file_path=log_path)
-                        return True
-                    elif status in (2020, 2030, 2040):
-                        DebugLogger("token校验错误 重新申请token", file_path=log_path)
-                        self.apply_token()
-                        continue
-                    else:
-                        DebugLogger("发送引擎心跳失败", file_path=log_path)
-                else:
-                    DebugLogger("调用发送引擎心跳接口 响应状态为：%s" % res.status_code, file_path=log_path)
-            except Exception as e:
-                ErrorLogger("调用发送引擎心跳接口 发生错误 错误信息为：%s" % e, file_path=log_path)
-            break
 
     def fetch_task(self):
         """"获取任务"""
@@ -269,34 +234,3 @@ class LMApi(Api):
         else:
             ErrorLogger("截图%s上传失败" % uuid, file_path=log_path)
             return False
-
-    def get_task_status(self, task_id):
-        """"获取任务状态"""
-        url = self.url + "/openapi/engine/task/status"
-        for index in range(2):
-            data = {
-                "taskId": task_id,
-                "engineCode": self.engine,
-                "timestamp": int(time.time())
-            }
-            try:
-                if index > 0:
-                    DebugLogger("-------重试调用获取任务状态接口--------")
-                res = self.request(url, data)
-                if res.status_code == 200:
-                    status = res.json()["status"]
-                    if status == 0:
-                        return res.json()["data"]
-                    elif status in (2020, 2030, 2040):
-                        DebugLogger("token校验错误 重新申请token")
-                        self.apply_token()
-                        continue
-                    else:
-                        DebugLogger("获取任务状态请求失败")
-                else:
-                    DebugLogger("调用获取任务状态接口 响应状态为：%s" % res.status_code)
-            except Exception as e:
-                ErrorLogger("调用获取任务状态接口 发生错误 错误信息为：%s" % e)
-            break
-        else:
-            return None

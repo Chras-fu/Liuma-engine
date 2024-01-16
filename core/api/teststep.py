@@ -187,7 +187,7 @@ class ApiTestStep:
                     continue
                 if j >= len(values):
                     raise IndexError("变量数错误, 请检查变量数配置是否与查询语句一致，当前查询结果: <br>{}".format(results))
-                self.context[n] = values[j]  # 保存变量到变量空间
+                self.context[n] = list(values[j])  # 保存变量到变量空间
 
     def save_response(self, res):
         """保存响应结果"""

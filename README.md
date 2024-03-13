@@ -49,7 +49,7 @@
 (5) 支持实时查看执行过程
 ```
 
-更多功能及详细请参考: [用户手册](https://docs.qq.com/doc/p/1e36932d41b40df896c1627a004068df9a28fc3f)
+更多功能及详细请参考: [用户手册](http://www.liumatest.cn/productDoc)
 
 
 ## 三、开发环境
@@ -81,7 +81,7 @@ Step7: 启动引擎 python3 startup.py
 
 ## 四、容器部署
 
-容器部署请参考: [部署手册](https://docs.qq.com/doc/p/c989fa8bf467eca1a1e0fa59b32ceab017407168)
+容器部署请参考: [部署手册](http://www.liumatest.cn/deployDoc)
 
 
 ## 五、关于我们
